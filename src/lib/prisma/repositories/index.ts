@@ -29,6 +29,24 @@ export {
   bibleDashboardRepository
 } from './bible-repository'
 
+// Work Projects repositories
+export {
+  WorkProjectRepository,
+  ProjectTaskRepository,
+  TimeEntryRepository,
+  CareerGoalRepository,
+  PerformanceMetricRepository,
+  ProjectMilestoneRepository,
+  WorkDashboardRepository,
+  workProjectRepository,
+  projectTaskRepository,
+  timeEntryRepository,
+  careerGoalRepository,
+  performanceMetricRepository,
+  projectMilestoneRepository,
+  workDashboardRepository
+} from './work-repository'
+
 // Type exports
 export type { 
   UserWithRelations,
