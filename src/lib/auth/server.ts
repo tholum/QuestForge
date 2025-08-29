@@ -18,7 +18,7 @@ export class AuthServer {
         return null;
       }
 
-      const payload = await verifyAccessToken(token);
+      const payload = verifyAccessToken(token);
       return payload;
     } catch (error) {
       console.error('Failed to get current user:', error);
@@ -30,7 +30,7 @@ export class AuthServer {
    * Check if user is authenticated
    */
   static async isAuthenticated(): Promise<boolean> {
-    const user = await this.getCurrentUser();
+    const user = await AuthServer.getCurrentUser();
     return user !== null;
   }
 
@@ -38,7 +38,7 @@ export class AuthServer {
    * Require authentication - redirect to login if not authenticated
    */
   static async requireAuth(): Promise<void> {
-    const isAuth = await this.isAuthenticated();
+    const isAuth = await AuthServer.isAuthenticated();
     if (!isAuth) {
       redirect('/auth/login');
     }
@@ -48,7 +48,7 @@ export class AuthServer {
    * Get user ID from server-side context
    */
   static async getUserId(): Promise<string | null> {
-    const user = await this.getCurrentUser();
+    const user = await AuthServer.getCurrentUser();
     return user?.userId || null;
   }
 
@@ -56,7 +56,7 @@ export class AuthServer {
    * Check if user has specific role
    */
   static async hasRole(role: string): Promise<boolean> {
-    const user = await this.getCurrentUser();
+    const user = await AuthServer.getCurrentUser();
     return user?.role === role;
   }
 
@@ -64,9 +64,9 @@ export class AuthServer {
    * Require specific role - redirect if not authorized
    */
   static async requireRole(role: string): Promise<void> {
-    await this.requireAuth();
+    await AuthServer.requireAuth();
     
-    const hasRequiredRole = await this.hasRole(role);
+    const hasRequiredRole = await AuthServer.hasRole(role);
     if (!hasRequiredRole) {
       redirect('/unauthorized');
     }
@@ -123,8 +123,8 @@ export class AuthServer {
    */
   static async verifyAndRefreshToken(): Promise<string | null> {
     try {
-      const token = await this.getToken();
-      const refreshToken = await this.getRefreshToken();
+      const token = await AuthServer.getToken();
+      const refreshToken = await AuthServer.getRefreshToken();
 
       if (!token) {
         return null;
@@ -132,7 +132,7 @@ export class AuthServer {
 
       // Try to verify current token
       try {
-        await verifyAccessToken(token);
+        verifyAccessToken(token);
         return token; // Token is still valid
       } catch (error) {
         // Token expired, try to refresh
@@ -140,11 +140,11 @@ export class AuthServer {
           try {
             // For now, just clear auth if token expires
             // TODO: Implement refresh token functionality
-            await this.clearAuth();
+            await AuthServer.clearAuth();
             return null;
           } catch (refreshError) {
             // Refresh failed, clear auth
-            await this.clearAuth();
+            await AuthServer.clearAuth();
             return null;
           }
         }
@@ -152,7 +152,7 @@ export class AuthServer {
       }
     } catch (error) {
       console.error('Token verification failed:', error);
-      await this.clearAuth();
+      await AuthServer.clearAuth();
       return null;
     }
   }

@@ -66,7 +66,7 @@ const FILTER_OPTIONS = [
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: '', label: 'All Priorities' },
+  { value: 'all', label: 'All Priorities' },
   { value: 'low', label: 'Low Priority' },
   { value: 'medium', label: 'Medium Priority' },
   { value: 'high', label: 'High Priority' },
@@ -74,7 +74,7 @@ const PRIORITY_OPTIONS = [
 ];
 
 const MODULE_OPTIONS = [
-  { value: '', label: 'All Categories' },
+  { value: 'all', label: 'All Categories' },
   { value: 'fitness', label: 'Fitness' },
   { value: 'learning', label: 'Learning' },
   { value: 'home', label: 'Home Projects' },
@@ -90,8 +90,8 @@ export function GoalsPage() {
   const [isMobile, setIsMobile] = React.useState(false);
   const [selectedTab, setSelectedTab] = React.useState<'all' | 'active' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedModule, setSelectedModule] = React.useState('');
-  const [selectedPriority, setSelectedPriority] = React.useState('');
+  const [selectedModule, setSelectedModule] = React.useState('all');
+  const [selectedPriority, setSelectedPriority] = React.useState('all');
   const [sortBy, setSortBy] = React.useState('createdAt');
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -131,8 +131,8 @@ export function GoalsPage() {
     limit: 20,
     filter: selectedTab === 'all' ? undefined : selectedTab,
     search: searchQuery || undefined,
-    moduleId: selectedModule || undefined,
-    priority: selectedPriority || undefined,
+    moduleId: selectedModule === 'all' ? undefined : selectedModule,
+    priority: selectedPriority === 'all' ? undefined : selectedPriority,
     sort: sortBy,
     order: sortOrder,
   });
