@@ -1,9 +1,12 @@
 import type { Preview } from '@storybook/nextjs-vite'
+import React from 'react'
 import "../src/app/globals.css";
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: "^on[A-Z].*" },
+    actions: { 
+      handles: ['mouseover', 'click', 'focusin', 'focusout']
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -33,6 +36,7 @@ const preview: Preview = {
       ],
     },
     viewport: {
+      defaultViewport: 'mobile2',
       viewports: {
         mobile1: {
           name: "Small Mobile",
@@ -40,6 +44,7 @@ const preview: Preview = {
             width: "320px",
             height: "568px",
           },
+          type: 'mobile',
         },
         mobile2: {
           name: "Large Mobile",
@@ -47,6 +52,7 @@ const preview: Preview = {
             width: "414px",
             height: "896px",
           },
+          type: 'mobile',
         },
         tablet: {
           name: "Tablet",
@@ -54,6 +60,7 @@ const preview: Preview = {
             width: "768px",
             height: "1024px",
           },
+          type: 'tablet',
         },
         desktop: {
           name: "Desktop",
@@ -61,6 +68,7 @@ const preview: Preview = {
             width: "1024px",
             height: "768px",
           },
+          type: 'desktop',
         },
         largeDesktop: {
           name: "Large Desktop",
@@ -68,15 +76,33 @@ const preview: Preview = {
             width: "1440px",
             height: "900px",
           },
+          type: 'desktop',
         },
       },
     },
     a11y: {
-      element: "#root",
-      config: {},
-      options: {},
-      manual: true,
-      test: 'todo'
+      element: "#storybook-root",
+      config: {
+        rules: [
+          {
+            id: 'color-contrast',
+            enabled: true,
+          },
+          {
+            id: 'focus-order-semantics',
+            enabled: true,
+          },
+          {
+            id: 'label',
+            enabled: true,
+          }
+        ]
+      },
+      options: {
+        checks: { 'color-contrast': { options: { noScroll: true } } },
+        restoreScroll: true,
+      },
+      manual: false
     },
   },
   globalTypes: {

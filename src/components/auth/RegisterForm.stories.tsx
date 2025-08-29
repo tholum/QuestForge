@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { action } from '@storybook/addon-actions'
 import { RegisterForm } from './RegisterForm'
 
 /**
@@ -46,7 +45,7 @@ type Story = StoryObj<typeof meta>
 
 // Mock submit handler that simulates API call
 const mockSubmit = async (data: any) => {
-  action('register-submitted')(data)
+  () => console.log('register-submitted')(data)
   
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 2000))

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { fn } from "@storybook/test"
 import { 
   Plus, 
   Download, 
@@ -68,7 +67,6 @@ const meta: Meta<typeof Button> = {
     onClick: { action: "clicked" }
   },
   args: {
-    onClick: fn(),
     children: "Button"
   }
 }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { fn } from "@storybook/test"
+//import { fn } from "@storybook/test"
 import { QuickAddButton, defaultQuickActions } from "./QuickAddButton"
 import { Plus, Zap } from "lucide-react"
 
@@ -62,7 +62,7 @@ const meta: Meta<typeof QuickAddButton> = {
     onMainAction: { action: "main-action" }
   },
   args: {
-    onMainAction: fn()
+    onMainAction: () => console.log('function called')
   }
 }
 
@@ -73,7 +73,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     position: "bottom-right",
-    onMainAction: fn()
+    onMainAction: () => console.log('function called')
   }
 }
 

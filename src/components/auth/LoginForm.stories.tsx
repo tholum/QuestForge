@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { action } from '@storybook/addon-actions'
 import { LoginForm } from './LoginForm'
 
 /**
@@ -51,7 +50,7 @@ type Story = StoryObj<typeof meta>
 
 // Mock submit handler that simulates API call
 const mockSubmit = async (data: any) => {
-  action('login-submitted')(data)
+  () => console.log('login-submitted')(data)
   
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1500))
@@ -70,7 +69,7 @@ const mockSubmit = async (data: any) => {
 export const Default: Story = {
   args: {
     onSubmit: mockSubmit,
-    onForgotPassword: action('forgot-password-clicked'),
+    onForgotPassword: () => console.log('forgot-password-clicked'),
     isLoading: false
   }
 }
@@ -81,7 +80,7 @@ export const Default: Story = {
 export const Loading: Story = {
   args: {
     onSubmit: mockSubmit,
-    onForgotPassword: action('forgot-password-clicked'),
+    onForgotPassword: () => console.log('forgot-password-clicked'),
     isLoading: true
   }
 }
@@ -102,7 +101,7 @@ export const WithoutForgotPassword: Story = {
 export const InteractiveDemo: Story = {
   args: {
     onSubmit: mockSubmit,
-    onForgotPassword: action('forgot-password-clicked'),
+    onForgotPassword: () => console.log('forgot-password-clicked'),
     isLoading: false
   },
   parameters: {
@@ -126,7 +125,7 @@ Any other credentials will show an error message.
 export const Mobile: Story = {
   args: {
     onSubmit: mockSubmit,
-    onForgotPassword: action('forgot-password-clicked'),
+    onForgotPassword: () => console.log('forgot-password-clicked'),
     isLoading: false
   },
   parameters: {
@@ -147,7 +146,7 @@ export const Mobile: Story = {
 export const DarkTheme: Story = {
   args: {
     onSubmit: mockSubmit,
-    onForgotPassword: action('forgot-password-clicked'),
+    onForgotPassword: () => console.log('forgot-password-clicked'),
     isLoading: false
   },
   parameters: {

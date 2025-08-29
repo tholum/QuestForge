@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { fn } from "@storybook/test"
+//import { fn } from "@storybook/test"
 import { 
   Target, 
   Calendar, 
@@ -82,8 +82,8 @@ const meta: Meta<typeof DataCard> = {
     onMenuClick: { action: "menu-clicked" }
   },
   args: {
-    onClick: fn(),
-    onMenuClick: fn()
+    onClick: () => console.log('function called'),
+    onMenuClick: () => console.log('function called')
   }
 }
 

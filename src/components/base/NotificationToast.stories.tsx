@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { fn } from "@storybook/test"
+//import { fn } from "@storybook/test"
 import { NotificationToast, ToastContainer, useToast } from "./NotificationToast"
 import { Button } from "./Button"
 import { Trophy, Target, Zap } from "lucide-react"
@@ -67,7 +67,7 @@ const meta: Meta<typeof NotificationToast> = {
     onClose: { action: "closed" }
   },
   args: {
-    onClose: fn()
+    onClose: () => console.log('function called')
   }
 }
 
