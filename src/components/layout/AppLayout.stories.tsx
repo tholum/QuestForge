@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { AppLayout } from './AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

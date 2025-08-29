@@ -1,0 +1,223 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DataCard > matches snapshot for complex configuration 1`] = `
+<div
+  class="bg-background text-foreground"
+>
+  <div
+    class="text-card-foreground flex flex-col gap-6 rounded-xl border shadow-sm relative overflow-hidden transition-all duration-200 hover:shadow-md border-primary/20 bg-primary/5 p-6 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+    data-slot="card"
+  >
+    <div
+      class="@container/card-header auto-rows-min grid-rows-[auto_auto] gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6 flex flex-row items-start justify-between space-y-0 pb-2"
+      data-slot="card-header"
+    >
+      <div
+        class="flex-1 space-y-1"
+      >
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="text-sm font-medium truncate"
+            data-slot="card-title"
+          >
+            Complex Card
+          </div>
+          <span
+            class="inline-flex items-center justify-center rounded-md border px-2 py-0.5 font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden text-xs"
+            data-slot="badge"
+          >
+            Featured
+          </span>
+        </div>
+        <div
+          class="text-muted-foreground text-xs"
+          data-slot="card-description"
+        >
+          Full-featured card
+        </div>
+      </div>
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive focus:scale-[0.98] active:scale-[0.96] select-none hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-8 rounded-md shrink-0"
+        data-loading="false"
+        data-slot="button"
+      >
+        <span
+          class="flex-1"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-ellipsis w-4 h-4"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="1"
+            />
+            <circle
+              cx="19"
+              cy="12"
+              r="1"
+            />
+            <circle
+              cx="5"
+              cy="12"
+              r="1"
+            />
+          </svg>
+        </span>
+      </button>
+    </div>
+    <div
+      class="px-6 space-y-3"
+      data-slot="card-content"
+    >
+      <div
+        class="flex items-center justify-between"
+      >
+        <div>
+          <div
+            class="text-2xl font-bold tracking-tight"
+          >
+            156
+          </div>
+          <div
+            class="text-xs text-muted-foreground"
+          >
+            total points
+          </div>
+        </div>
+        <div
+          class="flex items-center gap-1 text-sm text-green-600"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-trending-up w-4 h-4"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 7h6v6"
+            />
+            <path
+              d="m22 7-8.5 8.5-5-5L2 17"
+            />
+          </svg>
+          <span
+            class="font-medium"
+          >
+            +12%
+          </span>
+          <span
+            class="text-xs opacity-70"
+          >
+            this week
+          </span>
+        </div>
+      </div>
+      <div
+        class="space-y-2"
+      >
+        <div
+          class="flex items-center justify-between text-sm"
+        >
+          <span
+            class="text-muted-foreground"
+          >
+            Progress
+          </span>
+          <span
+            class="font-medium"
+          >
+            78
+            %
+          </span>
+        </div>
+        <div
+          aria-valuemax="100"
+          aria-valuemin="0"
+          class="bg-primary/20 relative w-full overflow-hidden rounded-full h-2"
+          data-max="100"
+          data-slot="progress"
+          data-state="indeterminate"
+          role="progressbar"
+        >
+          <div
+            class="bg-primary h-full w-full flex-1 transition-all"
+            data-max="100"
+            data-slot="progress-indicator"
+            data-state="indeterminate"
+            style="transform: translateX(-22%);"
+          />
+        </div>
+      </div>
+      <div
+        class="grid grid-cols-1 gap-2 text-sm"
+      >
+        <div
+          class="flex items-center gap-2 text-muted-foreground"
+        >
+          <span
+            class="text-xs"
+          >
+            Category
+            :
+          </span>
+          <span
+            class="font-medium text-foreground ml-auto"
+          >
+            Fitness
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2 text-muted-foreground"
+        >
+          <span
+            class="text-xs"
+          >
+            Streak
+            :
+          </span>
+          <span
+            class="font-medium text-foreground ml-auto"
+          >
+            5 days
+          </span>
+        </div>
+      </div>
+      <div
+        class="flex gap-2 pt-2"
+      >
+        <button
+          class="inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive focus:scale-[0.98] active:scale-[0.96] select-none bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 hover:shadow-sm h-8 text-sm px-3 gap-1.5 has-[>svg]:px-2.5 rounded-md flex-1"
+          data-loading="false"
+          data-slot="button"
+        >
+          <span
+            class="flex-1"
+          >
+            View Details
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { TouchFriendlyCard } from './TouchFriendlyCard'
 import { commonSwipeActions } from './SwipeActions'
 import { CheckCircle, Clock, AlertCircle, Star, Target } from 'lucide-react'

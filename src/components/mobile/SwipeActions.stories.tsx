@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { SwipeActions, commonSwipeActions, SwipeAction } from './SwipeActions'
 import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle, Clock, Star, Target, Heart, BookOpen, Zap, Trophy } from 'lucide-react'

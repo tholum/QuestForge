@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { AuthLayout } from './AuthLayout'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'

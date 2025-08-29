@@ -73,13 +73,13 @@ export function PasswordResetForm({
             Check your email
           </h2>
           <p className="text-muted-foreground">
-            If an account with that email exists, you'll receive password reset instructions shortly.
+            If an account with that email exists, you&apos;ll receive password reset instructions shortly.
           </p>
         </div>
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Didn't receive an email? Check your spam folder or try again in a few minutes.
+            Didn&apos;t receive an email? Check your spam folder or try again in a few minutes.
           </p>
           
           {onBackToLogin && (
@@ -105,7 +105,7 @@ export function PasswordResetForm({
             Reset your password
           </h2>
           <p className="text-muted-foreground">
-            Enter your email address and we'll send you instructions to reset your password.
+            Enter your email address and we&apos;ll send you instructions to reset your password.
           </p>
         </div>
 
@@ -139,7 +139,7 @@ export function PasswordResetForm({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    We'll send password reset instructions to this email address.
+                    We&apos;ll send password reset instructions to this email address.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
