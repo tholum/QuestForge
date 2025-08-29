@@ -54,6 +54,9 @@ async function main() {
     // Seed achievements (essential for all environments)
     await seedAchievements()
 
+    // Seed Bible reading plan presets (essential for Bible module)
+    await seedBibleReadingPlanPresets()
+
     // Seed test data only for development and test
     if (config.createFullData) {
       const users = await seedUsers()
@@ -82,6 +85,15 @@ async function cleanDatabase() {
   await prisma.progress.deleteMany()
   await prisma.goal.deleteMany()
   await prisma.achievement.deleteMany()
+  
+  // Bible Study related tables
+  await prisma.bibleReading.deleteMany()
+  await prisma.bibleReadingPlan.deleteMany()
+  await prisma.studySession.deleteMany()
+  await prisma.prayerRequest.deleteMany()
+  await prisma.scriptureBookmark.deleteMany()
+  await prisma.bibleReadingPlanPreset.deleteMany()
+  
   await prisma.user.deleteMany()
   await prisma.module.deleteMany()
 
@@ -537,6 +549,220 @@ async function seedProgress() {
 
   console.log(`✅ Created ${progressEntries.length} progress entries`)
   return progressEntries
+}
+
+/**
+ * Seed Bible reading plan presets
+ */
+async function seedBibleReadingPlanPresets() {
+  console.log('📖 Seeding Bible reading plan presets...')
+
+  const presets = [
+    {
+      id: 'one-year-chronological',
+      name: 'One Year Chronological',
+      description: 'Read the Bible in historical order over one year',
+      durationDays: 365,
+      category: 'chronological',
+      difficulty: 'medium',
+      isPopular: true,
+      planData: {
+        readings: generateChronologicalReadings(365)
+      }
+    },
+    {
+      id: 'one-year-canonical',
+      name: 'One Year Canonical',
+      description: 'Read the Bible in traditional book order over one year',
+      durationDays: 365,
+      category: 'canonical',
+      difficulty: 'medium',
+      isPopular: true,
+      planData: {
+        readings: generateCanonicalReadings(365)
+      }
+    },
+    {
+      id: 'new-testament-30-days',
+      name: 'New Testament in 30 Days',
+      description: 'Read through the entire New Testament in one month',
+      durationDays: 30,
+      category: 'canonical',
+      difficulty: 'hard',
+      isPopular: true,
+      planData: {
+        readings: generateNewTestamentReadings(30)
+      }
+    },
+    {
+      id: 'psalms-proverbs-150',
+      name: 'Psalms and Proverbs',
+      description: 'Read through Psalms and Proverbs for wisdom and worship',
+      durationDays: 150,
+      category: 'devotional',
+      difficulty: 'easy',
+      isPopular: true,
+      planData: {
+        readings: generatePsalmsProverbsReadings(150)
+      }
+    },
+    {
+      id: 'gospels-90-days',
+      name: 'Four Gospels in 90 Days',
+      description: 'Study the life and teachings of Jesus through all four Gospels',
+      durationDays: 90,
+      category: 'topical',
+      difficulty: 'medium',
+      isPopular: true,
+      planData: {
+        readings: generateGospelsReadings(90)
+      }
+    },
+    {
+      id: 'pauls-letters',
+      name: 'Paul\'s Letters',
+      description: 'Deep dive into the Apostle Paul\'s epistles',
+      durationDays: 60,
+      category: 'topical',
+      difficulty: 'medium',
+      isPopular: false,
+      planData: {
+        readings: generatePaulsLettersReadings(60)
+      }
+    }
+  ]
+
+  for (const preset of presets) {
+    await prisma.bibleReadingPlanPreset.upsert({
+      where: { id: preset.id },
+      update: preset,
+      create: preset
+    })
+  }
+
+  console.log(`✅ Created ${presets.length} Bible reading plan presets`)
+}
+
+// Helper functions to generate reading schedules
+function generateChronologicalReadings(days: number) {
+  // Simplified chronological order - in a real implementation, 
+  // this would follow historical chronology
+  const readings = []
+  const booksInOrder = [
+    'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+    'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+    '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+    'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms',
+    'Proverbs', 'Ecclesiastes', 'Song of Solomon',
+    'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel',
+    'Daniel', 'Hosea', 'Joel', 'Amos', 'Obadiah',
+    'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah',
+    'Haggai', 'Zechariah', 'Malachi',
+    'Matthew', 'Mark', 'Luke', 'John', 'Acts',
+    'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
+    'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
+    '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus',
+    'Philemon', 'Hebrews', 'James', '1 Peter', '2 Peter',
+    '1 John', '2 John', '3 John', 'Jude', 'Revelation'
+  ]
+
+  for (let i = 0; i < days; i++) {
+    const bookIndex = Math.floor(i / (days / booksInOrder.length))
+    const book = booksInOrder[Math.min(bookIndex, booksInOrder.length - 1)]
+    const chapter = (i % 5) + 1 // Simplified chapter assignment
+    
+    readings.push({
+      day: i + 1,
+      passages: [`${book} ${chapter}`]
+    })
+  }
+
+  return readings
+}
+
+function generateCanonicalReadings(days: number) {
+  // Simplified canonical order
+  return generateChronologicalReadings(days) // For simplicity, reuse chronological
+}
+
+function generateNewTestamentReadings(days: number) {
+  const readings = []
+  const ntBooks = [
+    'Matthew', 'Mark', 'Luke', 'John', 'Acts',
+    'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
+    'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
+    '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus',
+    'Philemon', 'Hebrews', 'James', '1 Peter', '2 Peter',
+    '1 John', '2 John', '3 John', 'Jude', 'Revelation'
+  ]
+
+  for (let i = 0; i < days; i++) {
+    const bookIndex = Math.floor(i / (days / ntBooks.length))
+    const book = ntBooks[Math.min(bookIndex, ntBooks.length - 1)]
+    const chapter = (i % 3) + 1
+    
+    readings.push({
+      day: i + 1,
+      passages: [`${book} ${chapter}`]
+    })
+  }
+
+  return readings
+}
+
+function generatePsalmsProverbsReadings(days: number) {
+  const readings = []
+  
+  for (let i = 0; i < days; i++) {
+    const psalmsChapter = (i % 150) + 1
+    const proverbsChapter = (i % 31) + 1
+    
+    readings.push({
+      day: i + 1,
+      passages: [`Psalm ${psalmsChapter}`, `Proverbs ${proverbsChapter}`]
+    })
+  }
+
+  return readings
+}
+
+function generateGospelsReadings(days: number) {
+  const readings = []
+  const gospels = ['Matthew', 'Mark', 'Luke', 'John']
+  
+  for (let i = 0; i < days; i++) {
+    const gospel = gospels[Math.floor(i / (days / 4))]
+    const chapter = (i % 10) + 1
+    
+    readings.push({
+      day: i + 1,
+      passages: [`${gospel} ${chapter}`]
+    })
+  }
+
+  return readings
+}
+
+function generatePaulsLettersReadings(days: number) {
+  const readings = []
+  const paulsLetters = [
+    'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
+    'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
+    '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus', 'Philemon'
+  ]
+  
+  for (let i = 0; i < days; i++) {
+    const letterIndex = Math.floor(i / (days / paulsLetters.length))
+    const letter = paulsLetters[Math.min(letterIndex, paulsLetters.length - 1)]
+    const chapter = (i % 5) + 1
+    
+    readings.push({
+      day: i + 1,
+      passages: [`${letter} ${chapter}`]
+    })
+  }
+
+  return readings
 }
 
 // Run the seeding

@@ -38,9 +38,14 @@ model User {
   preferences Json?
 
   // Relations
-  goals            Goal[]
-  progress         Progress[]
-  userAchievements UserAchievement[]
+  goals              Goal[]
+  progress           Progress[]
+  userAchievements   UserAchievement[]
+  bibleReadingPlans  BibleReadingPlan[]
+  bibleReadings      BibleReading[]
+  studySessions      StudySession[]
+  prayerRequests     PrayerRequest[]
+  scriptureBookmarks ScriptureBookmark[]
 
   @@map("User")
 }
@@ -87,7 +92,8 @@ model Goal {
   subGoals     Goal[]  @relation("GoalHierarchy")
 
   // Relations
-  progress Progress[]
+  progress      Progress[]
+  studySessions StudySession[]
 
   @@index([userId, isCompleted])
   @@index([moduleId])
@@ -148,4 +154,137 @@ model UserAchievement {
   @@unique([userId, achievementId])
   @@index([userId, isCompleted])
   @@map("UserAchievement")
+}
+
+// Bible Study Module Models
+
+// Bible reading plans
+model BibleReadingPlan {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  planType    String   // 'preset', 'custom'  
+  presetId    String?  // Reference to preset plans
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readings BibleReading[]
+
+  @@index([userId, isActive])
+  @@map("BibleReadingPlan")
+}
+
+// Daily reading assignments
+model BibleReading {
+  id                  String    @id @default(cuid())
+  planId              String
+  userId              String
+  assignedDate        DateTime
+  passages            Json      // Array of scripture references
+  isCompleted         Boolean   @default(false)
+  completedAt         DateTime?
+  readingTimeMinutes  Int?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  plan BibleReadingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, assignedDate])
+  @@index([userId, assignedDate])
+  @@map("BibleReading")
+}
+
+// Study sessions
+model StudySession {
+  id               String    @id @default(cuid())
+  userId           String
+  goalId           String?   // Optional link to related goal
+  title            String
+  description      String?
+  passages         Json?     // Array of scripture references
+  durationMinutes  Int?
+  studyDate        DateTime
+  notes            String?   // Rich text content
+  tags             Json?     // Array of tags
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal Goal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@index([userId, studyDate])
+  @@index([goalId])
+  @@map("StudySession")
+}
+
+// Prayer requests
+model PrayerRequest {
+  id                String    @id @default(cuid())
+  userId            String
+  title             String
+  description       String?
+  category          String    @default("personal") // 'personal', 'family', 'ministry', 'world'
+  priority          String    @default("medium")   // 'low', 'medium', 'high', 'urgent'
+  isPrivate         Boolean   @default(true)
+  isAnswered        Boolean   @default(false)
+  answeredAt        DateTime?
+  answerDescription String?
+  requestDate       DateTime
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isAnswered])
+  @@index([userId, category])
+  @@map("PrayerRequest")
+}
+
+// Scripture bookmarks
+model ScriptureBookmark {
+  id         String    @id @default(cuid())
+  userId     String
+  reference  String    // "Genesis 1:1", "John 3:16"
+  version    String    @default("ESV") // Bible translation
+  text       String?   // Cached verse text
+  notes      String?
+  highlights Json?     // Array of highlight objects
+  tags       Json?     // Array of tags
+  isPrivate  Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reference])
+  @@index([userId, version])
+  @@map("ScriptureBookmark")
+}
+
+// Preset reading plans
+model BibleReadingPlanPreset {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  durationDays Int
+  planData     Json     // JSON with daily assignments
+  category     String?  // 'chronological', 'canonical', 'topical'
+  difficulty   String   @default("medium")
+  isPopular    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([isPopular, category])
+  @@map("BibleReadingPlanPreset")
 }

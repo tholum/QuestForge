@@ -11,11 +11,13 @@ export * from './core';
 export { FitnessModule } from './fitness/FitnessModule';
 export { LearningModule } from './learning/LearningModule';
 export { HomeProjectsModule } from './home/HomeProjectsModule';
+export { BibleModule } from './bible/BibleModule';
 
 // Module registry utility to get all available modules
 import { FitnessModule } from './fitness/FitnessModule';
 import { LearningModule } from './learning/LearningModule';
 import { HomeProjectsModule } from './home/HomeProjectsModule';
+import { BibleModule } from './bible/BibleModule';
 import { IModule } from '../types/module';
 
 /**
@@ -24,7 +26,8 @@ import { IModule } from '../types/module';
 export const AVAILABLE_MODULES: Record<string, IModule> = {
   fitness: FitnessModule,
   learning: LearningModule,
-  home_projects: HomeProjectsModule
+  home_projects: HomeProjectsModule,
+  bible: BibleModule
 };
 
 /**

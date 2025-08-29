@@ -13,6 +13,22 @@ export { ProgressRepository } from './progress-repository'
 export { ModuleRepository } from './module-repository'
 export { AchievementRepository } from './achievement-repository'
 
+// Bible Study repositories
+export {
+  BibleReadingPlanRepository,
+  BibleReadingRepository,
+  StudySessionRepository,
+  PrayerRequestRepository,
+  ScriptureBookmarkRepository,
+  BibleDashboardRepository,
+  bibleReadingPlanRepository,
+  bibleReadingRepository,
+  studySessionRepository,
+  prayerRequestRepository,
+  scriptureBookmarkRepository,
+  bibleDashboardRepository
+} from './bible-repository'
+
 // Type exports
 export type { 
   UserWithRelations,
