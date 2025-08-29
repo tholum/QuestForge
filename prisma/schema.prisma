@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core Models following PROJECT_OVERVIEW.md naming conventions
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Gamification data
+  totalXp       Int @default(0)
+  currentLevel  Int @default(1)
+  streakCount   Int @default(0)
+  lastActivity  DateTime?
+
+  // Preferences
+  preferences Json?
+
+  // Relations
+  goals            Goal[]
+  progress         Progress[]
+  userAchievements UserAchievement[]
+
+  @@map("User")
+}
+
+model Module {
+  id          String   @id
+  name        String
+  version     String
+  isEnabled   Boolean  @default(true)
+  isInstalled Boolean  @default(false)
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  goals Goal[]
+
+  @@map("Module")
+}
+
+model Goal {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  isCompleted Boolean   @default(false)
+  targetDate  DateTime?
+  difficulty  String    @default("medium") // easy, medium, hard, expert
+  priority    String    @default("medium") // low, medium, high, urgent
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  // Polymorphic module data
+  moduleData Json?
+
+  // Self-referencing for sub-goals
+  parentGoalId String?
+  parentGoal   Goal?   @relation("GoalHierarchy", fields: [parentGoalId], references: [id])
+  subGoals     Goal[]  @relation("GoalHierarchy")
+
+  // Relations
+  progress Progress[]
+
+  @@index([userId, isCompleted])
+  @@index([moduleId])
+  @@index([parentGoalId])
+  @@map("Goal")
+}
+
+model Progress {
+  id          String   @id @default(cuid())
+  value       Float    @default(0)
+  maxValue    Float    @default(100)
+  xpEarned    Int      @default(0)
+  notes       String?
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId String
+  goal   Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([userId, recordedAt])
+  @@index([goalId])
+  @@map("Progress")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  tier        String   // bronze, silver, gold, platinum
+  moduleId    String?
+  conditions  Json     // Achievement conditions
+  xpReward    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@index([moduleId])
+  @@map("Achievement")
+}
+
+model UserAchievement {
+  id          String   @id @default(cuid())
+  unlockedAt  DateTime @default(now())
+  progress    Float    @default(0)
+  isCompleted Boolean  @default(false)
+
+  // Relations
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, isCompleted])
+  @@map("UserAchievement")
+}
