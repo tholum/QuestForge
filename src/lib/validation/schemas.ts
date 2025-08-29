@@ -336,10 +336,14 @@ export function safeValidateInput<T>(
  * Format Zod error for better readability
  */
 export function formatZodError(error: z.ZodError): string {
+  if (!error.errors || !Array.isArray(error.errors)) {
+    return error.message || 'Validation error'
+  }
+  
   return error.errors
     .map(err => {
-      const path = err.path.length > 0 ? `${err.path.join('.')}: ` : ''
-      return `${path}${err.message}`
+      const path = err.path && err.path.length > 0 ? `${err.path.join('.')}: ` : ''
+      return `${path}${err.message || 'Invalid value'}`
     })
     .join('; ')
 }
