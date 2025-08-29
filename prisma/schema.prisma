@@ -16,8 +16,17 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  password  String   // Hashed password
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Authentication fields
+  emailVerified        Boolean   @default(false)
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  lastLoginAt          DateTime?
+  loginAttempts        Int       @default(0)
+  lockedUntil          DateTime?
 
   // Gamification data
   totalXp       Int @default(0)
