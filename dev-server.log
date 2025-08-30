@@ -1,0 +1,326 @@
+
+> QuestForge@0.1.0 dev
+> next dev --turbopack
+
+ ⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://172.18.23.41:3001
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 846ms
+ ○ Compiling /modules/fitness ...
+ ✓ Compiled /modules/fitness in 3.1s
+ GET /modules/fitness 200 in 3370ms
+ ✓ Compiled in 181ms
+ ✓ Compiled /modules/fitness in 20ms
+ GET /modules/fitness 200 in 149ms
+ ✓ Compiled in 155ms
+ ✓ Compiled in 299ms
+ ✓ Compiled in 200ms
+ ✓ Compiled in 156ms
+ ✓ Compiled /modules/fitness in 21ms
+ ⨯ TypeError: useState only works in Client Components. Add the "use client" directive at the top of the file to use it. Read more: https://nextjs.org/docs/messages/react-client-hook-in-server-component
+    at FitnessModuleView (src/app/modules/fitness/page.tsx:14:43)
+  12 |
+  13 | const FitnessModuleView  ✓ Compiled in 130ms
+ ✓ Compiled /_not-found/page in 373ms
+ GET /modules/fitness/workouts 404 in 453ms
+ ⚠ Cross origin request detected from 172.18.23.41 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ✓ Compiled /api/v1/auth/me in 375ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 570ms
+ℹ️ Database info: {
+  timestamp: 2025-08-30T13:52:18.492Z,
+  message: 'Starting a sqlite pool with 15 connections.',
+  target: 'quaint::pooled'
+}
+ GET /api/v1/auth/me 401 in 726ms
+ ✓ Compiled /auth/login in 367ms
+ GET /auth/login?redirect=%2Fmodules%2Ffitness%2Fworkouts 200 in 410ms
+ GET /api/v1/auth/me 401 in 243ms
+ GET /api/v1/auth/me 401 in 236ms
+ ✓ Compiled /api/v1/auth/login in 134ms
+[SECURITY-WARNING] {"timestamp":"2025-08-30T13:52:31.247Z","event":"login_failed","severity":"warning","details":{"email":"tholum@coulee.tech","reason":"user_not_found","clientIP":"::ffff:10.100.0.6"}}
+ POST /api/v1/auth/login 401 in 385ms
+ ○ Compiling /auth/register ...
+ ✓ Compiled /auth/register in 597ms
+ GET /auth/register 200 in 652ms
+ GET /api/v1/auth/me 401 in 238ms
+ GET /api/v1/auth/me 401 in 238ms
+ ✓ Compiled /api/v1/auth/register in 183ms
+ ✓ Compiled in 246ms
+[SECURITY-INFO] {"timestamp":"2025-08-30T13:52:41.344Z","event":"registration_success","severity":"info","details":{"userId":"cmeybmzqv0000tyxavdzqjst3","email":"tholum@coulee.tech","clientIP":"::ffff:10.100.0.6"}}
+ POST /api/v1/auth/register 201 in 694ms
+ ✓ Compiled /dashboard in 322ms
+ GET /dashboard 200 in 366ms
+ GET /dashboard 200 in 51ms
+ GET /auth/login?redirect=%2Fdashboard 200 in 47ms
+ GET /api/v1/auth/me 200 in 239ms
+ GET /dashboard 200 in 56ms
+ GET /auth/login?redirect=%2Fdashboard 200 in 48ms
+ GET /api/v1/auth/me 200 in 244ms
+ GET /api/v1/auth/me 200 in 243ms
+ GET /dashboard 200 in 57ms
+ GET /auth/login?redirect=%2Fdashboard 200 in 46ms
+ GET /api/v1/auth/me 200 in 258ms
+ GET /api/v1/auth/me 200 in 236ms
+ GET /dashboard 200 in 64ms
+ GET /auth/login?redirect=%2Fdashboard 200 in 50ms
+ GET /api/v1/auth/me 200 in 258ms
+ GET /api/v1/auth/me 200 in 238ms
+ GET /dashboard 200 in 60ms
+ GET /auth/login?redirect=%2Fdashboard 200 in 51ms
+ GET /api/v1/auth/me 200 in 256ms
+ GET /api/v1/auth/me 200 in 238ms
+ GET /dashboard 200 in 62ms
+ GET /api/v1/auth/me 200 in 307ms
+ GET /auth/login?redirect=%2Fdashboard 200 in 141ms
+ GET /dashboard 200 in 136ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 269ms
+ GET /api/v1/auth/me 200 in 274ms
+ GET /modules/fitness/workouts 404 in 30ms
+ GET /modules/fitness/workouts 404 in 52ms
+ GET /api/v1/au ✓ Compiled in 251ms
+No auth header provided, using test user ID
+🔥 Prisma error: Error: Validation failed: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "planId"
+    ],
+    "message": "Invalid input: expected string, received null"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "status"
+    ],
+    "message": "Invalid input: expected string, received null"
+  }
+]
+    at validateInput (src/lib/validation/schemas.ts:310:13)
+    at <unknown> (src/lib/prisma/base-repository.ts:123:51)
+    at withErrorHandling (src/lib/prisma/error-handler.ts:367:18)
+    at WorkoutRepository.findMany (src/lib/prisma/base-repository.ts:121:29)
+    at GET (src/app/api/v1/modules/fitness/route.ts:157:50)
+  308 |     if (error instanceof z.ZodError) {
+  309 |       const formattedError = formatZodError(error)
+> 310 |       throw new Error(`Validation failed: ${formattedError}`)
+      |             ^
+  311 |     }
+  312 |     throw error
+  313 |   }
+Fitness module GET error: Error [DatabaseError]: Finding multiple workouts: Validation failed: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "planId"
+    ],
+    "message": "Invalid input: expected string, received null"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "status"
+    ],
+    "message": "Invalid input: expected string, received null"
+  }
+]
+    at handlePrismaError (src/lib/prisma/error-handler.ts:348:12)
+    at withErrorHandling (src/lib/prisma/error-handler.ts:369:21)
+  346 |     }
+  347 |
+> 348 |     return new DatabaseError(error.message, 'UNKNOWN_ERROR', error)
+      |            ^
+  349 |   }
+  350 |
+  351 |   // Handle unknown error types {
+  code: 'UNKNOWN_ERROR',
+  field: undefined,
+  value: undefined,
+  originalError: Error: Validation failed: [
+    {
+      "expected": "string",
+      "code": "invalid_type",
+      "path": [
+        "planId"
+      ],
+      "message": "Invalid input: expected string, received null"
+    },
+    {
+      "expected": "string",
+      "code": "invalid_type",
+      "path": [
+        "status"
+      ],
+      "message": "Invalid input: expected string, received null"
+    }
+  ]
+      at validateInput (src/lib/validation/schemas.ts:310:13)
+      at <unknown> (src/lib/prisma/base-repository.ts:123:51)
+      at withErrorHandling (src/lib/prisma/error-handler.ts:367:18)
+      at WorkoutRepository.findMany (src/lib/prisma/base-repository.ts:121:29)
+      at GET (src/app/api/v1/modules/fitness/route.ts:157:50)
+    308 |     if (error instanceof z.ZodError) {
+    309 |       const formattedError = formatZodError(error)
+  > 310 |       throw new Error(`Validation failed: ${formattedError}`)
+        |             ^
+    311 |     }
+    312 |     throw error
+    313 |   }
+}
+ GET /api/v1/modules/fitness?type=workouts 500 in 377ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=exercise-templates 200 in 237ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=workouts 200 in 319ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=exercise-templates 200 in 238ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=workouts&planId=test&status=completed 200 in 242ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=personal-records 200 in 240ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=dashboard 200 in 250ms
+No auth header provided, using test user ID
+ GET /api/v1/modules/fitness?type=workout-plans 200 in 234ms
+rno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.4us973rjban'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.ukqmbmvycb'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.ukqmbmvycb'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.nn1ymn3zzrr'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.nn1ymn3zzrr'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.gmnhdmiti7'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.gmnhdmiti7'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.wa3y48ynjhs'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.wa3y48ynjhs'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ○ Compiling /modules ...
+ ✓ Compiled /modules in 576ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rlbmwwum0jg'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rlbmwwum0jg'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.30op1td852l'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.30op1td852l'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rlbmwwum0jg'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rlbmwwum0jg'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.htc0z7890xb'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.htc0z7890xb'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.if93dzdxtve'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.if93dzdxtve'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.ms7qpfqykd'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.ms7qpfqykd'
+}
+ ✓ Compiled / in 292ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rf5ss7ksggq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rf5ss7ksggq'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.mci4re38eck'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.mci4re38eck'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rf5ss7ksggq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.rf5ss7ksggq'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.7apydfcgv4k'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.7apydfcgv4k'
+}
+[Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.fymzr50ibpu'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.fymzr50ibpu'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.dazkvawwwci'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/tholum/projects/goalassistant/.next/static/development/_buildManifest.js.tmp.dazkvawwwci'
+}

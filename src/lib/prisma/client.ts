@@ -293,6 +293,36 @@ class DatabaseClient {
   get achievement() { return this.client.achievement }
   get userAchievement() { return this.client.userAchievement }
   
+  // Bible Study Module models
+  get bibleReadingPlan() { return this.client.bibleReadingPlan }
+  get bibleReading() { return this.client.bibleReading }
+  get studySession() { return this.client.studySession }
+  get prayerRequest() { return this.client.prayerRequest }
+  get scriptureBookmark() { return this.client.scriptureBookmark }
+  get bibleReadingPlanPreset() { return this.client.bibleReadingPlanPreset }
+  
+  // Work Module models
+  get workProject() { return this.client.workProject }
+  get projectTask() { return this.client.projectTask }
+  get timeEntry() { return this.client.timeEntry }
+  get careerGoal() { return this.client.careerGoal }
+  get performanceMetric() { return this.client.performanceMetric }
+  get projectMilestone() { return this.client.projectMilestone }
+  
+  // Fitness Module models
+  get workoutPlan() { return this.client.workoutPlan }
+  get workout() { return this.client.workout }
+  get exerciseTemplate() { return this.client.exerciseTemplate }
+  get workoutExercise() { return this.client.workoutExercise }
+  get workoutSet() { return this.client.workoutSet }
+  get personalRecord() { return this.client.personalRecord }
+  
+  // User and system models
+  get userSetting() { return this.client.userSetting }
+  get userModuleConfig() { return this.client.userModuleConfig }
+  get analyticsCache() { return this.client.analyticsCache }
+  get calendarEvent() { return this.client.calendarEvent }
+  
   // Prisma client methods
   get $connect() { return this.client.$connect.bind(this.client) }
   get $disconnect() { return this.client.$disconnect.bind(this.client) }

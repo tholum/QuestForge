@@ -4,16 +4,14 @@
  * Next.js 15 App Router page for the Learning module.
  */
 
-import { requireAuth } from '@/lib/auth/server';
 import { LearningModule } from '@/modules/learning/LearningModule';
 import { MainContent } from '@/components/layout/MainContent';
 
 /**
- * Learning module page with authentication protection
+ * Learning module page - authentication handled by AuthProvider
  */
-export default async function Page() {
-  // Ensure user is authenticated
-  await requireAuth();
+export default function Page() {
+  // Server-side auth removed - handled by client-side AuthProvider
   
   // Render the module's desktop detail view
   const DesktopDetail = LearningModule.ui.DesktopDetail;

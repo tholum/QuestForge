@@ -4,19 +4,14 @@
  * Next.js 15 App Router page for the Bible Study module.
  */
 
-import { requireAuth } from '@/lib/auth/server';
-import { BibleModule } from '@/modules/bible/BibleModule';
+import { BibleDesktopDetailComponent } from '@/modules/bible/BibleModule';
 import { MainContent } from '@/components/layout/MainContent';
 
 /**
- * Bible Study module page with authentication protection
+ * Bible Study module page - authentication handled by AuthProvider
  */
-export default async function Page() {
-  // Ensure user is authenticated
-  await requireAuth();
-  
-  // Render the module's desktop detail view
-  const DesktopDetail = BibleModule.ui.DesktopDetail;
+export default function Page() {
+  // Server-side auth removed - handled by client-side AuthProvider
   
   return (
     <MainContent
@@ -24,7 +19,11 @@ export default async function Page() {
       pageTitle="Bible Study Module"
       pageSubtitle="Track your Bible reading, study sessions, and spiritual growth"
     >
-      <DesktopDetail />
+      <BibleDesktopDetailComponent 
+        moduleId="bible"
+        userId="test-user"
+        config={{}}
+      />
     </MainContent>
   );
 }

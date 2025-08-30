@@ -1,7 +1,9 @@
 /**
  * Authentication helper utilities for Playwright tests
  */
-import { Page, expect } from '@playwright/test';
+import { Page, expect, BrowserContext } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 
 export interface LoginCredentials {
   email: string;
@@ -12,6 +14,52 @@ export const DEFAULT_TEST_CREDENTIALS: LoginCredentials = {
   email: 'demo@example.com',
   password: 'password123'
 };
+
+const AUTH_STATE_FILE = path.join(__dirname, '..', 'auth-state.json');
+
+/**
+ * Load authentication state from cached file
+ */
+export async function loadAuthState(context: BrowserContext): Promise<boolean> {
+  try {
+    if (!fs.existsSync(AUTH_STATE_FILE)) {
+      console.log('No cached auth state found');
+      return false;
+    }
+
+    // Load the stored state
+    const authState = JSON.parse(fs.readFileSync(AUTH_STATE_FILE, 'utf-8'));
+    
+    // Apply cookies to context
+    if (authState.cookies && authState.cookies.length > 0) {
+      await context.addCookies(authState.cookies);
+      console.log('Loaded cached authentication state');
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.log('Failed to load auth state:', error);
+    return false;
+  }
+}
+
+/**
+ * Check if cached auth state is still valid
+ */
+export async function isAuthStateValid(page: Page): Promise<boolean> {
+  try {
+    const response = await page.request.get('/api/v1/auth/me');
+    if (!response.ok()) {
+      return false;
+    }
+    
+    const data = await response.json();
+    return !!(data.success && data.data?.user);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Login to the application using the provided credentials
@@ -195,11 +243,32 @@ export async function getCurrentUser(page: Page): Promise<any | null> {
 
 /**
  * Ensure user is logged in, login if not
- * Enhanced with better verification
+ * Enhanced with cached auth state and better verification
  */
 export async function ensureAuthenticated(page: Page, credentials: LoginCredentials = DEFAULT_TEST_CREDENTIALS): Promise<void> {
   console.log('Ensuring user is authenticated...');
   
+  // First try to load cached authentication state
+  const authLoaded = await loadAuthState(page.context());
+  if (authLoaded) {
+    // Verify cached auth is still valid
+    if (await isAuthStateValid(page)) {
+      console.log('Using cached authentication state');
+      
+      // Navigate to dashboard to ensure we're in the right place
+      const currentUrl = page.url();
+      if (currentUrl.includes('/auth/login') || currentUrl.endsWith('/') || currentUrl === 'about:blank') {
+        console.log('Navigating to dashboard with cached auth...');
+        await page.goto('/dashboard');
+        await page.waitForLoadState('networkidle');
+      }
+      return;
+    } else {
+      console.log('Cached auth state is invalid, proceeding with login...');
+    }
+  }
+  
+  // Fallback to regular authentication check and login
   const isAuthenticated = await isUserAuthenticated(page);
   if (!isAuthenticated) {
     console.log('User not authenticated, logging in...');

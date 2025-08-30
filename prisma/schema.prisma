@@ -63,6 +63,12 @@ model User {
   userModuleConfigs  UserModuleConfig[]
   analyticsCache     AnalyticsCache[]
   calendarEvents     CalendarEvent[]
+  
+  // Fitness-specific relations
+  workoutPlans       WorkoutPlan[]
+  workouts           Workout[]
+  exerciseTemplates  ExerciseTemplate[]
+  personalRecords    PersonalRecord[]
 
   @@map("User")
 }
@@ -545,4 +551,162 @@ model CalendarEvent {
   @@index([userId, startDate])
   @@index([goalId])
   @@map("CalendarEvent")
+}
+
+// Fitness Module Models
+
+// Workout Plans - organize workouts into weekly/monthly programs
+model WorkoutPlan {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isTemplate  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workouts Workout[]
+
+  @@index([userId, isActive])
+  @@index([userId, startDate])
+  @@map("WorkoutPlan")
+}
+
+// Individual Workouts - daily workout sessions
+model Workout {
+  id                String    @id @default(cuid())
+  planId            String?   // Optional - can be standalone workouts
+  userId            String
+  name              String
+  description       String?
+  scheduledDate     DateTime?
+  completedAt       DateTime?
+  isTemplate        Boolean   @default(false)
+  workoutType       String    // 'cardio', 'strength', 'flexibility', 'mixed'
+  estimatedDuration Int?      // minutes
+  actualDuration    Int?      // minutes
+  notes             String?
+  xpAwarded         Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  plan         WorkoutPlan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises    WorkoutExercise[]
+  personalRecords PersonalRecord[]
+
+  @@index([userId, scheduledDate])
+  @@index([userId, completedAt])
+  @@index([planId])
+  @@map("Workout")
+}
+
+// Exercise Templates - master list of exercises
+model ExerciseTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  category        String   // 'chest', 'back', 'legs', 'shoulders', 'arms', 'core', 'cardio'
+  muscleGroups    Json     // Array of targeted muscle groups
+  equipmentNeeded String?
+  instructions    Json?    // Array of instruction steps
+  videoUrl        String?
+  imageUrl        String?
+  isCustom        Boolean  @default(false)
+  userId          String?  // null for system exercises, set for custom user exercises
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user             User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutExercises WorkoutExercise[]
+  personalRecords  PersonalRecord[]
+
+  @@index([category, name])
+  @@index([userId, isActive])
+  @@index([name]) // For search functionality
+  @@map("ExerciseTemplate")
+}
+
+// Junction table - exercises within workouts with specific targets
+model WorkoutExercise {
+  id               String   @id @default(cuid())
+  workoutId        String
+  exerciseId       String
+  orderIndex       Int      // Order within workout (0, 1, 2, ...)
+  targetSets       Int?
+  targetReps       Int?
+  targetWeight     Float?   // lbs or kg
+  targetDuration   Int?     // seconds for time-based exercises
+  targetDistance   Float?   // miles, km for cardio
+  restBetweenSets  Int?     // seconds
+  notes            String?
+  completedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  workout   Workout          @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exercise  ExerciseTemplate @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  sets      WorkoutSet[]
+
+  @@unique([workoutId, orderIndex]) // Ensure proper ordering
+  @@index([workoutId, orderIndex])
+  @@map("WorkoutExercise")
+}
+
+// Individual sets within exercise - actual performance data
+model WorkoutSet {
+  id                String    @id @default(cuid())
+  workoutExerciseId String
+  setNumber         Int       // 1, 2, 3, etc.
+  reps              Int?
+  weight            Float?    // actual weight used
+  duration          Int?      // actual seconds
+  distance          Float?    // actual distance
+  restAfter         Int?      // seconds of rest after this set
+  rpe               Int?      // Rate of Perceived Exertion (1-10)
+  notes             String?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  workoutExercise WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([workoutExerciseId, setNumber])
+  @@index([workoutExerciseId, setNumber])
+  @@map("WorkoutSet")
+}
+
+// Track personal records and achievements
+model PersonalRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  exerciseId   String
+  recordType   String   // '1rm', '5rm', 'volume', 'duration', 'distance'
+  value        Float
+  unit         String   // 'lbs', 'kg', 'seconds', 'miles', 'km'
+  previousValue Float?  // Previous record for comparison
+  achievedAt   DateTime
+  workoutId    String?  // Reference to workout where PR was achieved
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise ExerciseTemplate @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  workout  Workout?         @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, exerciseId, recordType]) // One record per type per exercise per user
+  @@index([userId, achievedAt])
+  @@index([exerciseId, recordType])
+  @@map("PersonalRecord")
 }

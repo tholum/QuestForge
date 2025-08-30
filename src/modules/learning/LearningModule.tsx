@@ -61,8 +61,8 @@ const LearningMobileQuickAdd = ({ moduleId, userId, onSuccess, onCancel }: any) 
 );
 
 const LearningDesktopDetail = ({ moduleId, userId, config }: any) => (
-  <div className="p-6">
-    <h2 className="text-2xl font-bold mb-6">Learning Tracker</h2>
+  <div className="p-6" data-testid="module-content">
+    <h2 className="text-2xl font-bold mb-6" data-testid="module-title">Learning Tracker</h2>
     
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
@@ -487,4 +487,12 @@ export const LearningModule: IModule = {
     console.log('Learning module configuration changed:', { oldConfig, newConfig });
     // Update study reminders, sync settings, etc.
   }
+};
+
+// Export UI components for page access - Fix for module loading issues
+(LearningModule as any).ui = {
+  Dashboard: LearningDashboard,
+  MobileQuickAdd: LearningMobileQuickAdd, 
+  DesktopDetail: LearningDesktopDetail,
+  Settings: LearningSettings
 };

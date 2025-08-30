@@ -378,8 +378,8 @@ const BibleMobileQuickAdd = ({ onSuccess, onCancel }: { moduleId: string; userId
  */
 const BibleDesktopDetail = ({ moduleId, userId, config }: { moduleId: string; userId: string; config: Record<string, unknown> }) => {
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-blue-800">Bible Study Center</h2>
+    <div className="p-6" data-testid="module-content">
+      <h2 className="text-2xl font-bold mb-6 text-blue-800" data-testid="module-title">Bible Study Center</h2>
       
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
@@ -782,6 +782,12 @@ const bibleCapabilities: ModuleCapability[] = [
   }
 ];
 
+// Export UI components separately for direct imports
+export const BibleStudyDashboardComponent = BibleStudyDashboard;
+export const BibleMobileQuickAddComponent = BibleMobileQuickAdd;
+export const BibleDesktopDetailComponent = BibleDesktopDetail;
+export const BibleSettingsComponent = BibleSettings;
+
 // Main Bible module implementation
 export const BibleModule: IModule = {
   id: 'bible',
@@ -922,4 +928,12 @@ export const BibleModule: IModule = {
     console.log('Bible Study module configuration changed:', { oldConfig, newConfig });
     // React to configuration changes
   }
+};
+
+// Export UI components for page access - Fix for module loading issues
+(BibleModule as any).ui = {
+  Dashboard: BibleStudyDashboard,
+  MobileQuickAdd: BibleMobileQuickAdd, 
+  DesktopDetail: BibleDesktopDetail,
+  Settings: BibleSettings
 };

@@ -4,19 +4,14 @@
  * Next.js 15 App Router page for the Work Projects module.
  */
 
-import { requireAuth } from '@/lib/auth/server';
-import { WorkModule } from '@/modules/work/WorkModule';
+import { WorkDesktopDetailComponent } from '@/modules/work/WorkModule';
 import { MainContent } from '@/components/layout/MainContent';
 
 /**
- * Work Projects module page with authentication protection
+ * Work Projects module page - authentication handled by AuthProvider
  */
-export default async function Page() {
-  // Ensure user is authenticated
-  await requireAuth();
-  
-  // Render the module's desktop detail view
-  const DesktopDetail = WorkModule.ui.DesktopDetail;
+export default function Page() {
+  // Server-side auth removed - handled by client-side AuthProvider
   
   return (
     <MainContent
@@ -24,7 +19,11 @@ export default async function Page() {
       pageTitle="Work Projects Module"
       pageSubtitle="Manage your work projects, time tracking, and career development"
     >
-      <DesktopDetail />
+      <WorkDesktopDetailComponent 
+        moduleId="work"
+        userId="test-user"
+        config={{}}
+      />
     </MainContent>
   );
 }

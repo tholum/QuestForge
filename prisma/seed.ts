@@ -57,6 +57,9 @@ async function main() {
     // Seed Bible reading plan presets (essential for Bible module)
     await seedBibleReadingPlanPresets()
 
+    // Seed fitness exercise templates (essential for fitness module)
+    await seedFitnessExerciseTemplates()
+
     // Seed test data only for development and test
     if (config.createFullData) {
       const users = await seedUsers()
@@ -93,6 +96,14 @@ async function cleanDatabase() {
   await prisma.prayerRequest.deleteMany()
   await prisma.scriptureBookmark.deleteMany()
   await prisma.bibleReadingPlanPreset.deleteMany()
+
+  // Fitness related tables
+  await prisma.workoutSet.deleteMany()
+  await prisma.workoutExercise.deleteMany()
+  await prisma.personalRecord.deleteMany()
+  await prisma.workout.deleteMany()
+  await prisma.exerciseTemplate.deleteMany()
+  await prisma.workoutPlan.deleteMany()
   
   await prisma.user.deleteMany()
   await prisma.module.deleteMany()
@@ -763,6 +774,621 @@ function generatePaulsLettersReadings(days: number) {
   }
 
   return readings
+}
+
+/**
+ * Seed fitness exercise templates
+ */
+async function seedFitnessExerciseTemplates() {
+  console.log('💪 Seeding fitness exercise templates...')
+
+  const exerciseTemplates = [
+    // CHEST EXERCISES
+    {
+      name: 'Bench Press',
+      description: 'Barbell bench press for chest development',
+      category: 'chest',
+      muscleGroups: ['pectorals', 'triceps', 'anterior deltoids'],
+      equipmentNeeded: 'Barbell, bench',
+      instructions: [
+        'Lie on bench with feet flat on floor',
+        'Grip barbell with hands wider than shoulders',
+        'Lower bar to chest with control',
+        'Press bar up to full arm extension'
+      ]
+    },
+    {
+      name: 'Push-ups',
+      description: 'Bodyweight chest exercise',
+      category: 'chest',
+      muscleGroups: ['pectorals', 'triceps', 'core'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start in plank position',
+        'Lower body until chest nearly touches floor',
+        'Push up to starting position'
+      ]
+    },
+    {
+      name: 'Dumbbell Flyes',
+      description: 'Isolation exercise for chest muscles',
+      category: 'chest',
+      muscleGroups: ['pectorals'],
+      equipmentNeeded: 'Dumbbells, bench',
+      instructions: [
+        'Lie on bench holding dumbbells above chest',
+        'Lower weights in wide arc until chest stretch is felt',
+        'Bring dumbbells back together above chest'
+      ]
+    },
+    {
+      name: 'Incline Bench Press',
+      description: 'Upper chest focused bench press',
+      category: 'chest',
+      muscleGroups: ['upper pectorals', 'triceps', 'anterior deltoids'],
+      equipmentNeeded: 'Barbell, incline bench',
+      instructions: [
+        'Set bench to 30-45 degree incline',
+        'Grip barbell slightly wider than shoulders',
+        'Lower bar to upper chest',
+        'Press up to full extension'
+      ]
+    },
+    {
+      name: 'Decline Push-ups',
+      description: 'Bodyweight exercise targeting upper chest',
+      category: 'chest',
+      muscleGroups: ['upper pectorals', 'triceps', 'core'],
+      equipmentNeeded: 'Elevated surface',
+      instructions: [
+        'Place feet on elevated surface',
+        'Assume push-up position',
+        'Lower chest toward floor',
+        'Push back up to starting position'
+      ]
+    },
+
+    // BACK EXERCISES
+    {
+      name: 'Pull-ups',
+      description: 'Bodyweight back exercise',
+      category: 'back',
+      muscleGroups: ['latissimus dorsi', 'rhomboids', 'biceps'],
+      equipmentNeeded: 'Pull-up bar',
+      instructions: [
+        'Hang from bar with overhand grip',
+        'Pull body up until chin clears bar',
+        'Lower with control to full extension'
+      ]
+    },
+    {
+      name: 'Deadlift',
+      description: 'Compound posterior chain exercise',
+      category: 'back',
+      muscleGroups: ['erector spinae', 'glutes', 'hamstrings', 'traps'],
+      equipmentNeeded: 'Barbell, plates',
+      instructions: [
+        'Stand with feet hip-width apart',
+        'Hinge at hips and knees to grip bar',
+        'Lift bar by extending hips and knees',
+        'Stand tall then lower with control'
+      ]
+    },
+    {
+      name: 'Bent-over Rows',
+      description: 'Barbell rowing exercise for back thickness',
+      category: 'back',
+      muscleGroups: ['latissimus dorsi', 'rhomboids', 'middle traps'],
+      equipmentNeeded: 'Barbell, plates',
+      instructions: [
+        'Hinge at hips holding barbell',
+        'Keep back straight and core tight',
+        'Pull bar to lower chest/upper abdomen',
+        'Lower with control'
+      ]
+    },
+    {
+      name: 'Lat Pulldowns',
+      description: 'Machine exercise for lat development',
+      category: 'back',
+      muscleGroups: ['latissimus dorsi', 'rhomboids', 'biceps'],
+      equipmentNeeded: 'Lat pulldown machine',
+      instructions: [
+        'Sit at machine with thighs under pads',
+        'Grip bar wider than shoulders',
+        'Pull bar down to chest',
+        'Slowly return to starting position'
+      ]
+    },
+    {
+      name: 'T-Bar Rows',
+      description: 'Thick grip rowing for back development',
+      category: 'back',
+      muscleGroups: ['middle traps', 'rhomboids', 'latissimus dorsi'],
+      equipmentNeeded: 'T-bar row apparatus',
+      instructions: [
+        'Straddle T-bar with chest on pad',
+        'Grip handles with neutral grip',
+        'Pull handles toward chest',
+        'Lower with control'
+      ]
+    },
+
+    // LEG EXERCISES
+    {
+      name: 'Squats',
+      description: 'Compound leg exercise',
+      category: 'legs',
+      muscleGroups: ['quadriceps', 'glutes', 'hamstrings'],
+      equipmentNeeded: 'Barbell (optional)',
+      instructions: [
+        'Stand with feet shoulder-width apart',
+        'Lower by bending knees and hips',
+        'Go down until thighs parallel to floor',
+        'Drive through heels to return to start'
+      ]
+    },
+    {
+      name: 'Romanian Deadlifts',
+      description: 'Hip hinge movement for posterior chain',
+      category: 'legs',
+      muscleGroups: ['hamstrings', 'glutes', 'erector spinae'],
+      equipmentNeeded: 'Barbell or dumbbells',
+      instructions: [
+        'Hold weight with arms straight',
+        'Hinge at hips keeping knees slightly bent',
+        'Lower weight until hamstring stretch is felt',
+        'Drive hips forward to return to standing'
+      ]
+    },
+    {
+      name: 'Lunges',
+      description: 'Single leg functional movement',
+      category: 'legs',
+      muscleGroups: ['quadriceps', 'glutes', 'hamstrings'],
+      equipmentNeeded: 'None (dumbbells optional)',
+      instructions: [
+        'Step forward into lunge position',
+        'Lower back knee toward ground',
+        'Push through front heel to return',
+        'Alternate legs or complete all reps on one side'
+      ]
+    },
+    {
+      name: 'Leg Press',
+      description: 'Machine exercise for quad and glute development',
+      category: 'legs',
+      muscleGroups: ['quadriceps', 'glutes', 'hamstrings'],
+      equipmentNeeded: 'Leg press machine',
+      instructions: [
+        'Sit in machine with feet on platform',
+        'Lower weight by bending knees',
+        'Stop when knees reach 90 degrees',
+        'Press weight back to starting position'
+      ]
+    },
+    {
+      name: 'Calf Raises',
+      description: 'Isolation exercise for calf muscles',
+      category: 'legs',
+      muscleGroups: ['gastrocnemius', 'soleus'],
+      equipmentNeeded: 'None (weights optional)',
+      instructions: [
+        'Stand with balls of feet on elevated surface',
+        'Rise up onto toes as high as possible',
+        'Hold briefly at top',
+        'Lower slowly to starting position'
+      ]
+    },
+
+    // SHOULDER EXERCISES
+    {
+      name: 'Overhead Press',
+      description: 'Compound shoulder exercise',
+      category: 'shoulders',
+      muscleGroups: ['anterior deltoids', 'medial deltoids', 'triceps'],
+      equipmentNeeded: 'Barbell or dumbbells',
+      instructions: [
+        'Stand with weight at shoulder level',
+        'Press weight overhead to full extension',
+        'Lower with control to starting position',
+        'Keep core tight throughout'
+      ]
+    },
+    {
+      name: 'Lateral Raises',
+      description: 'Isolation exercise for medial deltoids',
+      category: 'shoulders',
+      muscleGroups: ['medial deltoids'],
+      equipmentNeeded: 'Dumbbells',
+      instructions: [
+        'Hold dumbbells at sides',
+        'Raise arms out to sides until parallel to floor',
+        'Hold briefly at top',
+        'Lower with control'
+      ]
+    },
+    {
+      name: 'Rear Delt Flyes',
+      description: 'Isolation exercise for posterior deltoids',
+      category: 'shoulders',
+      muscleGroups: ['posterior deltoids', 'rhomboids'],
+      equipmentNeeded: 'Dumbbells',
+      instructions: [
+        'Bend forward at hips holding dumbbells',
+        'Raise arms out to sides in reverse fly motion',
+        'Squeeze shoulder blades together',
+        'Lower with control'
+      ]
+    },
+    {
+      name: 'Arnold Press',
+      description: 'Rotational shoulder press variation',
+      category: 'shoulders',
+      muscleGroups: ['all deltoid heads', 'triceps'],
+      equipmentNeeded: 'Dumbbells',
+      instructions: [
+        'Start with dumbbells at shoulder level, palms facing body',
+        'Rotate palms outward while pressing up',
+        'Fully extend arms overhead',
+        'Reverse motion to return to start'
+      ]
+    },
+    {
+      name: 'Pike Push-ups',
+      description: 'Bodyweight shoulder exercise',
+      category: 'shoulders',
+      muscleGroups: ['anterior deltoids', 'triceps'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start in downward dog position',
+        'Lower head toward ground',
+        'Push back up to starting position',
+        'Keep legs straight throughout'
+      ]
+    },
+
+    // ARM EXERCISES
+    {
+      name: 'Bicep Curls',
+      description: 'Classic bicep isolation exercise',
+      category: 'arms',
+      muscleGroups: ['biceps'],
+      equipmentNeeded: 'Dumbbells or barbell',
+      instructions: [
+        'Hold weight with arms at sides',
+        'Curl weight up toward shoulders',
+        'Squeeze biceps at top',
+        'Lower with control'
+      ]
+    },
+    {
+      name: 'Tricep Dips',
+      description: 'Bodyweight tricep exercise',
+      category: 'arms',
+      muscleGroups: ['triceps', 'anterior deltoids'],
+      equipmentNeeded: 'Chair or dip station',
+      instructions: [
+        'Support body weight on hands',
+        'Lower body by bending elbows',
+        'Push back up to starting position',
+        'Keep body close to support'
+      ]
+    },
+    {
+      name: 'Hammer Curls',
+      description: 'Neutral grip bicep exercise',
+      category: 'arms',
+      muscleGroups: ['biceps', 'brachialis'],
+      equipmentNeeded: 'Dumbbells',
+      instructions: [
+        'Hold dumbbells with neutral grip',
+        'Curl weights up keeping palms facing each other',
+        'Squeeze at top',
+        'Lower with control'
+      ]
+    },
+    {
+      name: 'Tricep Extensions',
+      description: 'Overhead tricep isolation',
+      category: 'arms',
+      muscleGroups: ['triceps'],
+      equipmentNeeded: 'Dumbbell',
+      instructions: [
+        'Hold dumbbell overhead with both hands',
+        'Lower weight behind head by bending elbows',
+        'Extend arms back to starting position',
+        'Keep elbows pointing forward'
+      ]
+    },
+    {
+      name: 'Close-grip Push-ups',
+      description: 'Bodyweight tricep-focused exercise',
+      category: 'arms',
+      muscleGroups: ['triceps', 'pectorals'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Assume push-up position with hands close together',
+        'Lower chest toward hands',
+        'Push back up to starting position',
+        'Keep elbows close to body'
+      ]
+    },
+
+    // CORE EXERCISES
+    {
+      name: 'Plank',
+      description: 'Isometric core strengthening exercise',
+      category: 'core',
+      muscleGroups: ['rectus abdominis', 'transverse abdominis', 'obliques'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start in push-up position on forearms',
+        'Keep body in straight line from head to heels',
+        'Hold position while breathing normally',
+        'Engage core throughout'
+      ]
+    },
+    {
+      name: 'Crunches',
+      description: 'Classic abdominal exercise',
+      category: 'core',
+      muscleGroups: ['rectus abdominis'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Lie on back with knees bent',
+        'Place hands behind head',
+        'Lift shoulders off ground',
+        'Lower back down with control'
+      ]
+    },
+    {
+      name: 'Russian Twists',
+      description: 'Rotational core exercise',
+      category: 'core',
+      muscleGroups: ['obliques', 'rectus abdominis'],
+      equipmentNeeded: 'None (weight optional)',
+      instructions: [
+        'Sit with knees bent and feet lifted',
+        'Lean back slightly',
+        'Rotate torso side to side',
+        'Keep chest up throughout'
+      ]
+    },
+    {
+      name: 'Mountain Climbers',
+      description: 'Dynamic core and cardio exercise',
+      category: 'core',
+      muscleGroups: ['core', 'hip flexors', 'shoulders'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start in plank position',
+        'Alternate bringing knees toward chest',
+        'Maintain plank position throughout',
+        'Move at a controlled pace'
+      ]
+    },
+    {
+      name: 'Dead Bug',
+      description: 'Core stability exercise',
+      category: 'core',
+      muscleGroups: ['deep core muscles', 'hip flexors'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Lie on back with arms up and knees bent at 90 degrees',
+        'Slowly extend opposite arm and leg',
+        'Return to starting position',
+        'Keep lower back pressed to floor'
+      ]
+    },
+
+    // CARDIO EXERCISES
+    {
+      name: 'Running',
+      description: 'Cardiovascular endurance exercise',
+      category: 'cardio',
+      muscleGroups: ['legs', 'cardiovascular system'],
+      equipmentNeeded: 'Running shoes',
+      instructions: [
+        'Start with 5-minute warm-up walk',
+        'Maintain steady pace',
+        'Focus on breathing rhythm',
+        'Cool down with walking'
+      ]
+    },
+    {
+      name: 'Jumping Jacks',
+      description: 'Full body cardio exercise',
+      category: 'cardio',
+      muscleGroups: ['full body', 'cardiovascular system'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Stand with feet together, arms at sides',
+        'Jump feet apart while raising arms overhead',
+        'Jump back to starting position',
+        'Maintain steady rhythm'
+      ]
+    },
+    {
+      name: 'High Knees',
+      description: 'In-place cardio exercise',
+      category: 'cardio',
+      muscleGroups: ['hip flexors', 'legs', 'core'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Stand in place',
+        'Run in place bringing knees up high',
+        'Pump arms while running',
+        'Maintain quick cadence'
+      ]
+    },
+    {
+      name: 'Burpees',
+      description: 'Full body explosive exercise',
+      category: 'cardio',
+      muscleGroups: ['full body', 'cardiovascular system'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start standing',
+        'Drop into squat and place hands on floor',
+        'Jump feet back into plank',
+        'Jump feet forward and explode up'
+      ]
+    },
+    {
+      name: 'Cycling',
+      description: 'Low impact cardiovascular exercise',
+      category: 'cardio',
+      muscleGroups: ['legs', 'cardiovascular system'],
+      equipmentNeeded: 'Bicycle or stationary bike',
+      instructions: [
+        'Maintain steady pedaling cadence',
+        'Adjust resistance as needed',
+        'Keep good posture throughout',
+        'Start with moderate intensity'
+      ]
+    },
+
+    // FUNCTIONAL/MIXED EXERCISES
+    {
+      name: 'Turkish Get-up',
+      description: 'Complex full-body movement',
+      category: 'functional',
+      muscleGroups: ['full body', 'core', 'shoulders'],
+      equipmentNeeded: 'Kettlebell or dumbbell',
+      instructions: [
+        'Start lying down with weight in one hand',
+        'Follow specific sequence to standing position',
+        'Reverse the movement to return to lying',
+        'Focus on control and stability'
+      ]
+    },
+    {
+      name: 'Kettlebell Swings',
+      description: 'Explosive hip hinge movement',
+      category: 'functional',
+      muscleGroups: ['glutes', 'hamstrings', 'core', 'shoulders'],
+      equipmentNeeded: 'Kettlebell',
+      instructions: [
+        'Stand with feet hip-width apart',
+        'Hinge at hips and swing kettlebell between legs',
+        'Drive hips forward to swing weight to chest level',
+        'Let weight swing back down between legs'
+      ]
+    },
+    {
+      name: 'Farmer\'s Walk',
+      description: 'Loaded carry exercise',
+      category: 'functional',
+      muscleGroups: ['grip', 'core', 'traps', 'legs'],
+      equipmentNeeded: 'Heavy weights (dumbbells, kettlebells)',
+      instructions: [
+        'Pick up heavy weights in each hand',
+        'Walk forward with good posture',
+        'Keep core tight and shoulders back',
+        'Walk for time or distance'
+      ]
+    },
+    {
+      name: 'Box Step-ups',
+      description: 'Unilateral leg exercise',
+      category: 'functional',
+      muscleGroups: ['quadriceps', 'glutes', 'calves'],
+      equipmentNeeded: 'Sturdy box or platform',
+      instructions: [
+        'Step up onto box with one foot',
+        'Drive through heel to stand on box',
+        'Step back down with control',
+        'Complete all reps on one side before switching'
+      ]
+    },
+    {
+      name: 'Bear Crawl',
+      description: 'Quadrupedal movement pattern',
+      category: 'functional',
+      muscleGroups: ['core', 'shoulders', 'legs'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start on hands and knees',
+        'Lift knees slightly off ground',
+        'Crawl forward maintaining position',
+        'Keep hips low and core engaged'
+      ]
+    },
+
+    // FLEXIBILITY/MOBILITY
+    {
+      name: 'Hip Flexor Stretch',
+      description: 'Static stretch for hip flexors',
+      category: 'flexibility',
+      muscleGroups: ['hip flexors'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Step into lunge position',
+        'Lower back knee toward ground',
+        'Push hips forward to feel stretch',
+        'Hold for 30-60 seconds per side'
+      ]
+    },
+    {
+      name: 'Pigeon Pose',
+      description: 'Deep hip and glute stretch',
+      category: 'flexibility',
+      muscleGroups: ['glutes', 'hip flexors'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start in plank position',
+        'Bring one knee forward toward same-side hand',
+        'Extend back leg straight behind',
+        'Hold stretch and breathe deeply'
+      ]
+    },
+    {
+      name: 'Cat-Cow Stretch',
+      description: 'Spinal mobility exercise',
+      category: 'flexibility',
+      muscleGroups: ['spine', 'core'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Start on hands and knees',
+        'Arch back and look up (cow)',
+        'Round back and tuck chin (cat)',
+        'Move slowly between positions'
+      ]
+    },
+    {
+      name: 'Shoulder Rolls',
+      description: 'Shoulder mobility exercise',
+      category: 'flexibility',
+      muscleGroups: ['shoulders', 'upper traps'],
+      equipmentNeeded: 'None',
+      instructions: [
+        'Stand with arms at sides',
+        'Roll shoulders backward in large circles',
+        'Complete 10-15 rolls backward',
+        'Repeat rolling forward'
+      ]
+    }
+  ]
+
+  for (const exercise of exerciseTemplates) {
+    // Check if exercise already exists by name
+    const existing = await prisma.exerciseTemplate.findFirst({
+      where: { name: exercise.name, isCustom: false, userId: null }
+    })
+
+    if (!existing) {
+      await prisma.exerciseTemplate.create({
+        data: {
+          ...exercise,
+          isCustom: false,
+          userId: null // System exercises
+        }
+      })
+    }
+  }
+
+  console.log(`✅ Created ${exerciseTemplates.length} exercise templates`)
 }
 
 // Run the seeding

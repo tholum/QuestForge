@@ -68,8 +68,8 @@ const HomeProjectsMobileQuickAdd = ({ moduleId, userId, onSuccess, onCancel }: a
 );
 
 const HomeProjectsDesktopDetail = ({ moduleId, userId, config }: any) => (
-  <div className="p-6">
-    <h2 className="text-2xl font-bold mb-6">Home Projects</h2>
+  <div className="p-6" data-testid="module-content">
+    <h2 className="text-2xl font-bold mb-6" data-testid="module-title">Home Projects</h2>
     
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-3">
@@ -513,4 +513,12 @@ export const HomeProjectsModule: IModule = {
     console.log('Home Projects module configuration changed:', { oldConfig, newConfig });
     // Update tracking settings
   }
+};
+
+// Export UI components for page access - Fix for module loading issues
+(HomeProjectsModule as any).ui = {
+  Dashboard: HomeProjectsDashboard,
+  MobileQuickAdd: HomeProjectsMobileQuickAdd, 
+  DesktopDetail: HomeProjectsDesktopDetail,
+  Settings: HomeProjectsSettings
 };

@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 5
+      "actualWorkers": 2
     },
     "preserveOutput": "always",
     "reporter": [
@@ -37,7 +37,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 2
         },
         "id": "chromium",
         "name": "chromium",
@@ -53,7 +53,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 2
         },
         "id": "firefox",
         "name": "firefox",
@@ -69,7 +69,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 2
         },
         "id": "webkit",
         "name": "webkit",
@@ -85,7 +85,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.55.0",
-    "workers": 7,
+    "workers": 2,
     "webServer": {
       "command": "npm run dev",
       "url": "http://localhost:3000",
@@ -97,21 +97,21 @@
   },
   "suites": [
     {
-      "title": "validation.spec.ts",
-      "file": "validation.spec.ts",
+      "title": "404-detection.spec.ts",
+      "file": "404-detection.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Page Validation Test Suite",
-          "file": "validation.spec.ts",
-          "line": 10,
+          "title": "404 Detection Test Suite",
+          "file": "404-detection.spec.ts",
+          "line": 234,
           "column": 6,
           "specs": [
             {
-              "title": "Authentication pages are accessible and functional",
-              "ok": true,
+              "title": "Core Application Pages - 404 Detection",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -124,40 +124,259 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 11684,
-                      "errors": [],
+                      "status": "timedOut",
+                      "duration": 30494,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        }
+                      ],
                       "stdout": [
                         {
-                          "text": "Testing authentication pages...\n"
+                          "text": "\n🔍 Testing Core Application Pages for 404 Issues...\n"
                         },
                         {
-                          "text": "✅ Login page is accessible and functional\n"
+                          "text": "Attempting to login with email: demo@example.com\n"
                         },
                         {
-                          "text": "✅ Registration page is accessible and functional\n"
+                          "text": "Login API response status: 200\n"
                         },
                         {
-                          "text": "✅ Forgot password page is accessible\n"
+                          "text": "Login successful for user: demo@example.com\n"
+                        },
+                        {
+                          "text": "Testing page: /\n"
+                        },
+                        {
+                          "text": "Testing page: /dashboard\n"
+                        },
+                        {
+                          "text": "Testing page: /goals\n"
+                        },
+                        {
+                          "text": "Testing page: /progress\n"
+                        },
+                        {
+                          "text": "Testing page: /settings\n"
+                        },
+                        {
+                          "text": "Testing page: /profile\n"
+                        },
+                        {
+                          "text": "Testing page: /analytics\n"
+                        },
+                        {
+                          "text": "Testing page: /achievements\n"
+                        },
+                        {
+                          "text": "Testing page: /calendar\n"
+                        },
+                        {
+                          "text": "Testing page: /modules\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-08-30T00:23:01.661Z",
+                      "startTime": "2025-08-30T05:56:48.159Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-0f83b-ation-Pages---404-Detection-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-0f83b-ation-Pages---404-Detection-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-0f83b-ation-Pages---404-Detection-chromium/error-context.md"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "1c599a7f4afdfa3cc2e4-865597d468e0d86dfb37",
-              "file": "validation.spec.ts",
-              "line": 12,
+              "id": "1e3b128b033484867a75-1228632ae825904fb27e",
+              "file": "404-detection.spec.ts",
+              "line": 244,
               "column": 7
             },
             {
-              "title": "Protected pages are accessible after authentication",
+              "title": "Module Pages - 404 Detection",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15397,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m5\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m5\u001b[39m\n    at /home/tholum/projects/goalassistant/tests/404-detection.spec.ts:319:32",
+                        "location": {
+                          "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                          "column": 32,
+                          "line": 319
+                        },
+                        "snippet": "  317 |     }\n  318 |\n> 319 |     expect(failedPages.length).toBe(0);\n      |                                ^\n  320 |   });\n  321 |\n  322 |   test('Authentication Pages - 404 Detection', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                            "column": 32,
+                            "line": 319
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m5\u001b[39m\n\n  317 |     }\n  318 |\n> 319 |     expect(failedPages.length).toBe(0);\n      |                                ^\n  320 |   });\n  321 |\n  322 |   test('Authentication Pages - 404 Detection', async ({ page }) => {\n    at /home/tholum/projects/goalassistant/tests/404-detection.spec.ts:319:32"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🔍 Testing Module Pages for 404 Issues...\n"
+                        },
+                        {
+                          "text": "Ensuring user is authenticated...\n"
+                        },
+                        {
+                          "text": "No cached auth state found\n"
+                        },
+                        {
+                          "text": "User not authenticated, logging in...\n"
+                        },
+                        {
+                          "text": "Attempting to login with email: demo@example.com\n"
+                        },
+                        {
+                          "text": "Login API response status: 200\n"
+                        },
+                        {
+                          "text": "Login successful for user: demo@example.com\n"
+                        },
+                        {
+                          "text": "Testing page: /modules/fitness\n"
+                        },
+                        {
+                          "text": "Testing page: /modules/learning\n"
+                        },
+                        {
+                          "text": "Testing page: /modules/home\n"
+                        },
+                        {
+                          "text": "Testing page: /modules/bible\n"
+                        },
+                        {
+                          "text": "Testing page: /modules/work\n"
+                        },
+                        {
+                          "text": "\n📊 404 Detection Report Generated:\n"
+                        },
+                        {
+                          "text": "   Report saved to: test-results/404-reports/404-detection-2025-08-30T05-57-34-731Z.json\n"
+                        },
+                        {
+                          "text": "   Total pages tested: 5\n"
+                        },
+                        {
+                          "text": "   Working pages: 0\n"
+                        },
+                        {
+                          "text": "   Pages with 404 issues: 5\n"
+                        },
+                        {
+                          "text": "   Pages with errors: 0\n"
+                        },
+                        {
+                          "text": "\n❌ Pages with Issues:\n"
+                        },
+                        {
+                          "text": "   - /modules/fitness: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /modules/learning: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /modules/home: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /modules/bible: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /modules/work: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "\n❌ Failed Module Pages:\n"
+                        },
+                        {
+                          "text": "   /modules/fitness: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /modules/learning: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /modules/home: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /modules/bible: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /modules/work: Page contains 404 content\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-30T05:57:19.339Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-c9597-odule-Pages---404-Detection-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-c9597-odule-Pages---404-Detection-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-c9597-odule-Pages---404-Detection-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                        "column": 32,
+                        "line": 319
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1e3b128b033484867a75-665e44a776ed12e4c581",
+              "file": "404-detection.spec.ts",
+              "line": 286,
+              "column": 7
+            },
+            {
+              "title": "Authentication Pages - 404 Detection",
               "ok": false,
               "tags": [],
               "tests": [
@@ -172,83 +391,137 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "failed",
-                      "duration": 10970,
+                      "duration": 11490,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /home/tholum/projects/goalassistant/tests/validation.spec.ts:87:36",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m4\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m4\u001b[39m\n    at /home/tholum/projects/goalassistant/tests/404-detection.spec.ts:355:32",
                         "location": {
-                          "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                          "column": 36,
-                          "line": 87
+                          "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                          "column": 32,
+                          "line": 355
                         },
-                        "snippet": "  85 |       });\n  86 |       \n> 87 |       expect(hasEssentialElements).toBe(true);\n     |                                    ^\n  88 |       console.log(`✅ ${pageData.title} page is accessible and functional`);\n  89 |     }\n  90 |   });"
+                        "snippet": "  353 |     }\n  354 |\n> 355 |     expect(failedPages.length).toBe(0);\n      |                                ^\n  356 |   });\n  357 |\n  358 |   test('Comprehensive All Pages Test', async ({ page }) => {"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                            "column": 36,
-                            "line": 87
+                            "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                            "column": 32,
+                            "line": 355
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  85 |       });\n  86 |       \n> 87 |       expect(hasEssentialElements).toBe(true);\n     |                                    ^\n  88 |       console.log(`✅ ${pageData.title} page is accessible and functional`);\n  89 |     }\n  90 |   });\n    at /home/tholum/projects/goalassistant/tests/validation.spec.ts:87:36"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m4\u001b[39m\n\n  353 |     }\n  354 |\n> 355 |     expect(failedPages.length).toBe(0);\n      |                                ^\n  356 |   });\n  357 |\n  358 |   test('Comprehensive All Pages Test', async ({ page }) => {\n    at /home/tholum/projects/goalassistant/tests/404-detection.spec.ts:355:32"
                         }
                       ],
                       "stdout": [
                         {
-                          "text": "Testing protected pages with authentication...\n"
+                          "text": "\n🔍 Testing Authentication Pages for 404 Issues...\n"
                         },
                         {
-                          "text": "Attempting to login with email: demo@example.com\n"
+                          "text": "Logging out user\n"
                         },
                         {
-                          "text": "Login API response status: 200\n"
+                          "text": "User is already logged out\n"
                         },
                         {
-                          "text": "Login successful for user: demo@example.com\n"
+                          "text": "Testing page: /auth/login\n"
                         },
                         {
-                          "text": "Testing page: /\n"
+                          "text": "Testing page: /auth/register\n"
+                        },
+                        {
+                          "text": "Testing page: /auth/forgot-password\n"
+                        },
+                        {
+                          "text": "Testing page: /auth/reset-password\n"
+                        },
+                        {
+                          "text": "\n📊 404 Detection Report Generated:\n"
+                        },
+                        {
+                          "text": "   Report saved to: test-results/404-reports/404-detection-2025-08-30T05-56-59-631Z.json\n"
+                        },
+                        {
+                          "text": "   Total pages tested: 4\n"
+                        },
+                        {
+                          "text": "   Working pages: 0\n"
+                        },
+                        {
+                          "text": "   Pages with 404 issues: 4\n"
+                        },
+                        {
+                          "text": "   Pages with errors: 0\n"
+                        },
+                        {
+                          "text": "\n❌ Pages with Issues:\n"
+                        },
+                        {
+                          "text": "   - /auth/login: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /auth/register: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /auth/forgot-password: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   - /auth/reset-password: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "\n❌ Failed Auth Pages:\n"
+                        },
+                        {
+                          "text": "   /auth/login: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /auth/register: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /auth/forgot-password: Page contains 404 content\n"
+                        },
+                        {
+                          "text": "   /auth/reset-password: Page contains 404 content\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-08-30T00:23:01.684Z",
+                      "startTime": "2025-08-30T05:56:48.158Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-9c6a6-ssible-after-authentication-chromium/test-failed-1.png"
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-16c90-ation-Pages---404-Detection-chromium/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-9c6a6-ssible-after-authentication-chromium/video.webm"
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-16c90-ation-Pages---404-Detection-chromium/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-9c6a6-ssible-after-authentication-chromium/error-context.md"
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-16c90-ation-Pages---404-Detection-chromium/error-context.md"
                         }
                       ],
                       "errorLocation": {
-                        "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                        "column": 36,
-                        "line": 87
+                        "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                        "column": 32,
+                        "line": 355
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "1c599a7f4afdfa3cc2e4-00ac7938275aab159a0a",
-              "file": "validation.spec.ts",
-              "line": 44,
+              "id": "1e3b128b033484867a75-16395a30bd52b3e4a828",
+              "file": "404-detection.spec.ts",
+              "line": 322,
               "column": 7
             },
             {
-              "title": "Module pages are accessible after authentication",
-              "ok": true,
+              "title": "Comprehensive All Pages Test",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -260,109 +533,29 @@
                   "results": [
                     {
                       "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 22077,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "Testing module pages with authentication...\n"
-                        },
-                        {
-                          "text": "Attempting to login with email: demo@example.com\n"
-                        },
-                        {
-                          "text": "Login API response status: 200\n"
-                        },
-                        {
-                          "text": "Login successful for user: demo@example.com\n"
-                        },
-                        {
-                          "text": "Testing module: /modules/fitness\n"
-                        },
-                        {
-                          "text": "✅ Fitness Module is accessible and functional\n"
-                        },
-                        {
-                          "text": "Testing module: /modules/learning\n"
-                        },
-                        {
-                          "text": "✅ Learning Module is accessible and functional\n"
-                        },
-                        {
-                          "text": "Testing module: /modules/home\n"
-                        },
-                        {
-                          "text": "✅ Home Projects Module is accessible and functional\n"
-                        },
-                        {
-                          "text": "Testing module: /modules/bible\n"
-                        },
-                        {
-                          "text": "✅ Bible Study Module is accessible and functional\n"
-                        },
-                        {
-                          "text": "Testing module: /modules/work\n"
-                        },
-                        {
-                          "text": "✅ Work Projects Module is accessible and functional\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-08-30T00:23:01.674Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1c599a7f4afdfa3cc2e4-87b32fe2fcca3ea56f68",
-              "file": "validation.spec.ts",
-              "line": 92,
-              "column": 7
-            },
-            {
-              "title": "Demo user login works correctly",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
-                      "status": "failed",
-                      "duration": 10898,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 30176,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('text=Demo User')\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Demo User')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('text=Demo User')\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Demo User')\u001b[22m\n\n    at /home/tholum/projects/goalassistant/tests/validation.spec.ts:159:50",
-                        "location": {
-                          "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                          "column": 50,
-                          "line": 159
-                        },
-                        "snippet": "  157 |     \n  158 |     // Verify user information is visible\n> 159 |     await expect(page.locator('text=Demo User')).toBeVisible({ timeout: 5000 });\n      |                                                  ^\n  160 |     \n  161 |     console.log('✅ Demo user login works correctly');\n  162 |   });"
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
                           "location": {
-                            "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                            "column": 50,
-                            "line": 159
+                            "file": "/home/tholum/projects/goalassistant/tests/404-detection.spec.ts",
+                            "column": 18,
+                            "line": 380
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('text=Demo User')\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Demo User')\u001b[22m\n\n\n  157 |     \n  158 |     // Verify user information is visible\n> 159 |     await expect(page.locator('text=Demo User')).toBeVisible({ timeout: 5000 });\n      |                                                  ^\n  160 |     \n  161 |     console.log('✅ Demo user login works correctly');\n  162 |   });\n    at /home/tholum/projects/goalassistant/tests/validation.spec.ts:159:50"
+                          "message": "Error: page.waitForTimeout: Test timeout of 30000ms exceeded.\n\n  378 |       const result = await testPageFor404(page, url);\n  379 |       allResults.push(result);\n> 380 |       await page.waitForTimeout(300);\n      |                  ^\n  381 |     }\n  382 |\n  383 |     console.log('Testing module pages...');\n    at /home/tholum/projects/goalassistant/tests/404-detection.spec.ts:380:18"
                         }
                       ],
                       "stdout": [
                         {
-                          "text": "Testing demo user login specifically...\n"
+                          "text": "\n🔍 Running Comprehensive Test on All Pages...\n"
                         },
                         {
                           "text": "Logging out user\n"
@@ -371,85 +564,19 @@
                           "text": "User is already logged out\n"
                         },
                         {
-                          "text": "Login API response: 200\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-08-30T00:23:01.695Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-4466b--user-login-works-correctly-chromium/test-failed-1.png"
+                          "text": "Testing auth pages...\n"
                         },
                         {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-4466b--user-login-works-correctly-chromium/video.webm"
+                          "text": "Testing page: /auth/login\n"
                         },
                         {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-4466b--user-login-works-correctly-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                        "column": 50,
-                        "line": 159
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "1c599a7f4afdfa3cc2e4-e99f200d9b11a9c36364",
-              "file": "validation.spec.ts",
-              "line": 125,
-              "column": 7
-            },
-            {
-              "title": "Navigation between pages works properly",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
-                      "status": "failed",
-                      "duration": 14888,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"/progress\"\u001b[39m\nReceived string:    \u001b[31m\"http://localhost:3000/dashboard\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"/progress\"\u001b[39m\nReceived string:    \u001b[31m\"http://localhost:3000/dashboard\"\u001b[39m\n    at /home/tholum/projects/goalassistant/tests/validation.spec.ts:190:26",
-                        "location": {
-                          "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                          "column": 26,
-                          "line": 190
+                          "text": "Testing page: /auth/register\n"
                         },
-                        "snippet": "  188 |       \n  189 |       // Verify we reached the correct page\n> 190 |       expect(page.url()).toContain(navTest.to);\n      |                          ^\n  191 |       \n  192 |       // Verify page has loaded content\n  193 |       const hasContent = await page.evaluate(() => {"
-                      },
-                      "errors": [
                         {
-                          "location": {
-                            "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                            "column": 26,
-                            "line": 190
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"/progress\"\u001b[39m\nReceived string:    \u001b[31m\"http://localhost:3000/dashboard\"\u001b[39m\n\n  188 |       \n  189 |       // Verify we reached the correct page\n> 190 |       expect(page.url()).toContain(navTest.to);\n      |                          ^\n  191 |       \n  192 |       // Verify page has loaded content\n  193 |       const hasContent = await page.evaluate(() => {\n    at /home/tholum/projects/goalassistant/tests/validation.spec.ts:190:26"
-                        }
-                      ],
-                      "stdout": [
+                          "text": "Testing page: /auth/forgot-password\n"
+                        },
                         {
-                          "text": "Testing navigation between pages...\n"
+                          "text": "Testing page: /auth/reset-password\n"
                         },
                         {
                           "text": "Attempting to login with email: demo@example.com\n"
@@ -461,49 +588,62 @@
                           "text": "Login successful for user: demo@example.com\n"
                         },
                         {
-                          "text": "Navigating from /dashboard to /goals\n"
+                          "text": "Testing core pages...\n"
                         },
                         {
-                          "text": "✅ Navigation to /goals successful\n"
+                          "text": "Testing page: /\n"
                         },
                         {
-                          "text": "Navigating from /goals to /progress\n"
+                          "text": "Testing page: /dashboard\n"
+                        },
+                        {
+                          "text": "Testing page: /goals\n"
+                        },
+                        {
+                          "text": "Testing page: /progress\n"
+                        },
+                        {
+                          "text": "Testing page: /settings\n"
+                        },
+                        {
+                          "text": "Testing page: /profile\n"
+                        },
+                        {
+                          "text": "Testing page: /analytics\n"
+                        },
+                        {
+                          "text": "Testing page: /achievements\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-08-30T00:23:01.658Z",
+                      "startTime": "2025-08-30T05:57:00.196Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-a3bd3-etween-pages-works-properly-chromium/test-failed-1.png"
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-98f85-omprehensive-All-Pages-Test-chromium/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-a3bd3-etween-pages-works-properly-chromium/video.webm"
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-98f85-omprehensive-All-Pages-Test-chromium/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/home/tholum/projects/goalassistant/test-results/validation-Page-Validation-a3bd3-etween-pages-works-properly-chromium/error-context.md"
+                          "path": "/home/tholum/projects/goalassistant/test-results/404-detection-404-Detectio-98f85-omprehensive-All-Pages-Test-chromium/error-context.md"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "/home/tholum/projects/goalassistant/tests/validation.spec.ts",
-                        "column": 26,
-                        "line": 190
-                      }
+                      ]
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "1c599a7f4afdfa3cc2e4-78383e508cf77060a1b5",
-              "file": "validation.spec.ts",
-              "line": 164,
+              "id": "1e3b128b033484867a75-088c6fb7a29db90f8595",
+              "file": "404-detection.spec.ts",
+              "line": 358,
               "column": 7
             }
           ]
@@ -513,11 +653,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-08-30T00:22:53.524Z",
-    "duration": 30433.704,
-    "expected": 2,
+    "startTime": "2025-08-30T05:56:44.496Z",
+    "duration": 50357.384999999995,
+    "expected": 0,
     "skipped": 0,
-    "unexpected": 3,
+    "unexpected": 4,
     "flaky": 0
   }
 }

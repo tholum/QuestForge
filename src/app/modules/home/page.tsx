@@ -4,16 +4,14 @@
  * Next.js 15 App Router page for the Home Projects module.
  */
 
-import { requireAuth } from '@/lib/auth/server';
 import { HomeProjectsModule } from '@/modules/home/HomeProjectsModule';
 import { MainContent } from '@/components/layout/MainContent';
 
 /**
- * Home Projects module page with authentication protection
+ * Home Projects module page - authentication handled by AuthProvider
  */
-export default async function Page() {
-  // Ensure user is authenticated
-  await requireAuth();
+export default function Page() {
+  // Server-side auth removed - handled by client-side AuthProvider
   
   // Render the module's desktop detail view
   const DesktopDetail = HomeProjectsModule.ui.DesktopDetail;

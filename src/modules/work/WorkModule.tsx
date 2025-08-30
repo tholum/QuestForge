@@ -691,8 +691,8 @@ const WorkMobileQuickAdd = ({ onSuccess, onCancel }: { moduleId: string; userId:
  */
 const WorkDesktopDetail = ({ moduleId, userId, config }: { moduleId: string; userId: string; config: Record<string, unknown> }) => {
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-blue-800">Work Management Center</h2>
+    <div className="p-6" data-testid="module-content">
+      <h2 className="text-2xl font-bold mb-6 text-blue-800" data-testid="module-title">Work Management Center</h2>
       
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="grid w-full grid-cols-6">
@@ -1306,6 +1306,12 @@ const workCapabilities: ModuleCapability[] = [
   }
 ];
 
+// Export UI components separately for direct imports
+export const WorkDashboardComponent = WorkDashboard;
+export const WorkMobileQuickAddComponent = WorkMobileQuickAdd;
+export const WorkDesktopDetailComponent = WorkDesktopDetail;
+export const WorkSettingsComponent = WorkSettings;
+
 // Main Work Module implementation
 export const WorkModule: IModule = {
   id: 'work',
@@ -1406,4 +1412,12 @@ export const WorkModule: IModule = {
   async onConfigChange(oldConfig: Record<string, unknown>, newConfig: Record<string, unknown>): Promise<void> {
     console.log('Work Projects module configuration changed:', { oldConfig, newConfig });
   }
+};
+
+// Export UI components for page access - Fix for module loading issues
+(WorkModule as any).ui = {
+  Dashboard: WorkDashboard,
+  MobileQuickAdd: WorkMobileQuickAdd, 
+  DesktopDetail: WorkDesktopDetail,
+  Settings: WorkSettings
 };
