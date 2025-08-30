@@ -47,3 +47,10 @@ storybook-static
 /src/generated/prisma
 *.db
 *.db-journal
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
