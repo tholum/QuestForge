@@ -15,29 +15,23 @@ export default function LoginPage() {
   const router = useRouter()
   const { user, login, isLoading, isInitialized } = useAuth()
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isInitialized && user) {
-      router.push('/dashboard')
-    }
-  }, [user, isInitialized, router])
+  // Don't redirect here - let AuthProvider handle it to prevent conflicts
 
   // Handle forgot password navigation
   const handleForgotPassword = () => {
     router.push('/auth/forgot-password')
   }
 
-  // Handle login success
+  // Handle login success - pass redirect to login function
   const handleLogin = async (data: any) => {
-    const result = await login(data)
+    // Get redirect URL from query params
+    const urlParams = new URLSearchParams(window.location.search)
+    const redirectTo = urlParams.get('redirect')
     
-    if (result.success) {
-      // Get redirect URL from query params or default to dashboard
-      const urlParams = new URLSearchParams(window.location.search)
-      const redirectTo = urlParams.get('redirect') || '/dashboard'
-      router.push(redirectTo)
-    }
+    // Pass redirect to login function, let it handle navigation
+    const result = await login(data, redirectTo || undefined)
     
+    // Don't call router.push here - let AuthProvider or login function handle it
     return result
   }
 

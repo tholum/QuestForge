@@ -46,7 +46,7 @@ interface UseAuthReturn {
   user: User | null
   isLoading: boolean
   isInitialized: boolean
-  login: (data: LoginData) => Promise<{ success: boolean; error?: string }>
+  login: (data: LoginData, redirectTo?: string) => Promise<{ success: boolean; error?: string }>
   register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
   forgotPassword: (data: PasswordResetRequestData) => Promise<{ success: boolean; error?: string }>
@@ -84,8 +84,8 @@ export function useAuth(): UseAuthReturn {
     initializeAuth()
   }, [])
 
-  // Login function
-  const login = useCallback(async (data: LoginData) => {
+  // Login function with redirect handling
+  const login = useCallback(async (data: LoginData, redirectTo?: string) => {
     setIsLoading(true)
     
     try {
@@ -101,7 +101,19 @@ export function useAuth(): UseAuthReturn {
       const result = await response.json()
 
       if (result.success) {
+        // Set user state first
         setUser(result.data.user)
+        
+        // Handle redirect if specified and not an auth route
+        if (redirectTo && !redirectTo.startsWith('/auth/')) {
+          // Small delay to let AuthProvider process the user state change
+          setTimeout(() => {
+            // Use window.location.href for clean navigation without router conflicts
+            window.location.href = redirectTo
+          }, 50)
+        }
+        // If no redirect specified, let AuthProvider handle the redirect to dashboard
+        
         return { success: true }
       } else {
         return { 
