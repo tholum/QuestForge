@@ -1,9 +1,109 @@
 'use client'
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { IModule, Achievement, PointsConfiguration, ModuleCapability } from '../../types/module';
-import { ExerciseLibraryView } from '../../components/fitness/ExerciseLibrary';
-import { WorkoutPlanningView } from '../../components/fitness/WorkoutPlanner/WorkoutPlanningView';
+
+// Import HMR recovery utilities for development error handling
+import { useHMRErrorBoundary } from '../../lib/dev/hmr-recovery';
+
+// Use lazy loading for heavy components to avoid HMR module factory issues
+const ExerciseLibraryView = lazy(() => 
+  import('../../components/fitness/ExerciseLibrary').then(mod => ({
+    default: mod.ExerciseLibraryView
+  })).catch(error => {
+    console.error('Failed to load ExerciseLibraryView:', error);
+    // Return a fallback component
+    return { default: () => <div className="p-4 text-red-600">Failed to load Exercise Library</div> };
+  })
+);
+
+const WorkoutPlanningView = lazy(() => 
+  import('../../components/fitness/WorkoutPlanner/WorkoutPlanningView').then(mod => ({
+    default: mod.WorkoutPlanningView
+  })).catch(error => {
+    console.error('Failed to load WorkoutPlanningView:', error);
+    // Return a fallback component
+    return { default: () => <div className="p-4 text-red-600">Failed to load Workout Planner</div> };
+  })
+);
+
+// Component wrapper with error boundary for HMR issues
+const ComponentWrapper: React.FC<{ children: React.ReactNode; fallbackMessage?: string }> = ({ 
+  children, 
+  fallbackMessage = "Component loading failed"
+}) => (
+  <Suspense fallback={
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  }>
+    <ErrorBoundary fallbackMessage={fallbackMessage}>
+      {children}
+    </ErrorBoundary>
+  </Suspense>
+);
+
+// Error boundary specifically for HMR module factory issues
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallbackMessage?: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode; fallbackMessage?: string }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Fitness Module HMR/Component Error:', error, errorInfo);
+    
+    // Check if this is an HMR-related error
+    if (error.message?.includes('module factory') || 
+        error.message?.includes('deleted in an HMR update')) {
+      console.warn('🔥 HMR module factory error detected in fitness component');
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h3 className="text-red-800 font-medium">Module Loading Error</h3>
+          <p className="text-red-600 text-sm mt-1">
+            {this.props.fallbackMessage || "Development error - component failed to load"}
+          </p>
+          <div className="mt-3 space-x-2">
+            <button 
+              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+              onClick={() => this.setState({ hasError: false, error: null })}
+            >
+              Retry
+            </button>
+            <button 
+              className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors"
+              onClick={() => window.location.reload()}
+            >
+              Refresh Page
+            </button>
+          </div>
+          {process.env.NODE_ENV === 'development' && (
+            <details className="mt-2">
+              <summary className="text-xs text-gray-600 cursor-pointer">Error Details</summary>
+              <pre className="text-xs text-gray-500 mt-1 p-2 bg-gray-100 rounded overflow-auto">
+                {this.state.error?.message}
+              </pre>
+            </details>
+          )}
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // Component imports (these would be actual components in a real implementation)
 const FitnessDashboard = ({ moduleId, userId, config }: any) => (
@@ -167,25 +267,29 @@ const FitnessDesktopDetail = ({ moduleId, userId, config }: any) => {
 
       {activeTab === 'exercises' && (
         <div className="bg-white rounded-lg shadow p-6">
-          <ExerciseLibraryView 
-            showHeader={false}
-            onExerciseSelect={(exercise) => {
-              console.log('Selected exercise:', exercise)
-              // Handle exercise selection
-            }}
-          />
+          <ComponentWrapper fallbackMessage="Failed to load Exercise Library">
+            <ExerciseLibraryView 
+              showHeader={false}
+              onExerciseSelect={(exercise) => {
+                console.log('Selected exercise:', exercise)
+                // Handle exercise selection
+              }}
+            />
+          </ComponentWrapper>
         </div>
       )}
 
       {activeTab === 'workouts' && (
         <div className="bg-white rounded-lg shadow p-0 h-[600px]">
-          <WorkoutPlanningView 
-            userId={userId}
-            onWorkoutComplete={(workout) => {
-              console.log('Workout completed:', workout)
-              // Could trigger XP awards or achievement checks
-            }}
-          />
+          <ComponentWrapper fallbackMessage="Failed to load Workout Planner">
+            <WorkoutPlanningView 
+              userId={userId}
+              onWorkoutComplete={(workout) => {
+                console.log('Workout completed:', workout)
+                // Could trigger XP awards or achievement checks
+              }}
+            />
+          </ComponentWrapper>
         </div>
       )}
 

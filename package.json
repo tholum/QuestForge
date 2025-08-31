@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:webpack": "DISABLE_TURBOPACK=true next dev",
+    "dev:safe": "node scripts/dev-safe.js",
     "build": "prisma generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
@@ -34,7 +36,13 @@
     "test:e2e:404": "playwright test 404-detection.spec.ts",
     "test:e2e:404:auto": "./tests/run-404-detection.js",
     "test:e2e:check": "./tests/check-test-readiness.js",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:fitness-validation": "npm run test:e2e:fitness && npm run test:performance:fitness && npm run test:integration:fitness",
+    "test:e2e:fitness": "playwright test tests/e2e/fitness-module-flows.spec.ts",
+    "test:performance:fitness": "playwright test tests/performance/fitness-module.spec.ts",
+    "test:integration:fitness": "vitest run tests/integration/fitness-components.test.tsx tests/integration/auth-routing.test.ts",
+    "validate-fixes": "npm run test:fitness-validation && npm run health-check:fitness",
+    "health-check:fitness": "playwright test tests/modules/module-validation.spec.ts --grep='fitness'"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
