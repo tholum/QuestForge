@@ -18,7 +18,13 @@ import type {
   ExerciseTemplate,
   WorkoutExercise,
   WorkoutSet,
-  PersonalRecord
+  PersonalRecord,
+  Food,
+  FoodLog,
+  NutritionGoal,
+  WaterIntake,
+  Meal,
+  MealFood
 } from '@prisma/client'
 
 // Validation schemas
@@ -393,7 +399,7 @@ export class WorkoutRepository extends BaseRepository<
    * Copy a single workout to a new date
    */
   async copyWorkout(sourceWorkoutId: string, targetDate: Date, userId: string): Promise<Workout> {
-    return this.transaction(async (tx) => {
+    return this.transaction(async ({ tx }) => {
       // Get the source workout with all exercises and sets
       const sourceWorkout = await tx.workout.findFirst({
         where: { 
@@ -471,7 +477,7 @@ export class WorkoutRepository extends BaseRepository<
    * Copy all workouts from one day to another
    */
   async copyDay(sourceDate: Date, targetDate: Date, userId: string): Promise<Workout[]> {
-    return this.transaction(async (tx) => {
+    return this.transaction(async ({ tx }) => {
       // Get all workouts from the source date
       const sourceWorkouts = await tx.workout.findMany({
         where: {
@@ -563,7 +569,7 @@ export class WorkoutRepository extends BaseRepository<
    * Copy all workouts from one week to another
    */
   async copyWeek(sourceWeekStart: Date, targetWeekStart: Date, userId: string): Promise<Workout[]> {
-    return this.transaction(async (tx) => {
+    return this.transaction(async ({ tx }) => {
       const sourceWeekEnd = new Date(sourceWeekStart)
       sourceWeekEnd.setDate(sourceWeekStart.getDate() + 7)
 
@@ -784,7 +790,7 @@ export class WorkoutExerciseRepository extends BaseRepository<
    * Copy an exercise from one workout to another
    */
   async copyExercise(sourceExerciseId: string, targetWorkoutId: string, userId: string, orderIndex?: number): Promise<WorkoutExercise> {
-    return this.transaction(async (tx) => {
+    return this.transaction(async ({ tx }) => {
       // Get the source exercise with all sets
       const sourceExercise = await tx.workoutExercise.findFirst({
         where: { id: sourceExerciseId },
@@ -864,7 +870,7 @@ export class WorkoutExerciseRepository extends BaseRepository<
    * Copy multiple exercises from one workout to another
    */
   async copyExercises(sourceWorkoutId: string, targetWorkoutId: string, userId: string, exerciseIds?: string[]): Promise<WorkoutExercise[]> {
-    return this.transaction(async (tx) => {
+    return this.transaction(async ({ tx }) => {
       // Verify both workouts belong to user
       const [sourceWorkout, targetWorkout] = await Promise.all([
         tx.workout.findFirst({ where: { id: sourceWorkoutId, userId } }),
@@ -1420,6 +1426,899 @@ export class FitnessDashboardRepository {
   }
 }
 
+// Nutrition-specific validation schemas
+const FoodCreateSchema = z.object({
+  name: z.string().min(1).max(200),
+  brand: z.string().optional(),
+  barcode: z.string().optional(),
+  category: z.string(),
+  caloriesPer100g: z.number().min(0),
+  proteinPer100g: z.number().min(0),
+  carbsPer100g: z.number().min(0),
+  fatPer100g: z.number().min(0),
+  fiberPer100g: z.number().min(0).optional(),
+  sugarPer100g: z.number().min(0).optional(),
+  sodiumPer100g: z.number().min(0).optional(),
+  servingSize: z.number().min(0).optional(),
+  servingUnit: z.string().default('g'),
+  isCustom: z.boolean().default(false),
+  userId: z.string().optional()
+})
+
+const FoodUpdateSchema = FoodCreateSchema.partial()
+
+const FoodQuerySchema = z.object({
+  userId: z.string().optional(),
+  category: z.string().optional(),
+  search: z.string().optional(),
+  isCustom: z.boolean().optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional()
+})
+
+const FoodLogCreateSchema = z.object({
+  userId: z.string(),
+  foodId: z.string(),
+  mealId: z.string().optional(),
+  quantity: z.number().min(0),
+  unit: z.string(),
+  calories: z.number().min(0),
+  protein: z.number().min(0),
+  carbs: z.number().min(0),
+  fat: z.number().min(0),
+  fiber: z.number().min(0).optional(),
+  sugar: z.number().min(0).optional(),
+  sodium: z.number().min(0).optional(),
+  consumedAt: z.date().optional()
+})
+
+const FoodLogUpdateSchema = FoodLogCreateSchema.partial()
+
+const FoodLogQuerySchema = z.object({
+  userId: z.string().optional(),
+  foodId: z.string().optional(),
+  mealId: z.string().optional(),
+  date: z.date().optional(),
+  dateFrom: z.date().optional(),
+  dateTo: z.date().optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional()
+})
+
+const NutritionGoalCreateSchema = z.object({
+  userId: z.string(),
+  dailyCalories: z.number().min(0),
+  dailyProtein: z.number().min(0),
+  dailyCarbs: z.number().min(0),
+  dailyFat: z.number().min(0),
+  dailyFiber: z.number().min(0).optional(),
+  dailySugar: z.number().min(0).optional(),
+  dailySodium: z.number().min(0).optional(),
+  proteinPercentage: z.number().min(0).max(100).optional(),
+  carbsPercentage: z.number().min(0).max(100).optional(),
+  fatPercentage: z.number().min(0).max(100).optional(),
+  goalType: z.enum(['weight_loss', 'weight_gain', 'maintenance', 'muscle_gain', 'general']).default('general'),
+  activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).default('moderate'),
+  startDate: z.date().optional(),
+  endDate: z.date().optional()
+})
+
+const NutritionGoalUpdateSchema = NutritionGoalCreateSchema.partial()
+
+const WaterIntakeCreateSchema = z.object({
+  userId: z.string(),
+  amountMl: z.number().min(0),
+  amountOz: z.number().min(0).optional(),
+  recordedAt: z.date().optional(),
+  date: z.date(),
+  source: z.string().optional(),
+  notes: z.string().optional(),
+  temperature: z.enum(['cold', 'room', 'warm', 'hot']).optional()
+})
+
+const WaterIntakeUpdateSchema = WaterIntakeCreateSchema.partial()
+
+const WaterIntakeQuerySchema = z.object({
+  userId: z.string().optional(),
+  date: z.date().optional(),
+  dateFrom: z.date().optional(),
+  dateTo: z.date().optional(),
+  source: z.string().optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional()
+})
+
+const MealCreateSchema = z.object({
+  userId: z.string(),
+  name: z.string().min(1).max(200),
+  mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+  date: z.date(),
+  plannedTime: z.date().optional(),
+  consumedTime: z.date().optional(),
+  totalCalories: z.number().min(0).default(0),
+  totalProtein: z.number().min(0).default(0),
+  totalCarbs: z.number().min(0).default(0),
+  totalFat: z.number().min(0).default(0),
+  totalFiber: z.number().min(0).default(0).optional(),
+  totalSugar: z.number().min(0).default(0).optional(),
+  totalSodium: z.number().min(0).default(0).optional(),
+  notes: z.string().optional(),
+  isTemplate: z.boolean().default(false)
+})
+
+const MealUpdateSchema = MealCreateSchema.partial()
+
+const MealQuerySchema = z.object({
+  userId: z.string().optional(),
+  mealType: z.string().optional(),
+  date: z.date().optional(),
+  dateFrom: z.date().optional(),
+  dateTo: z.date().optional(),
+  isTemplate: z.boolean().optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional()
+})
+
+// Type definitions for nutrition
+type FoodCreate = z.infer<typeof FoodCreateSchema>
+type FoodUpdate = z.infer<typeof FoodUpdateSchema>
+type FoodQuery = z.infer<typeof FoodQuerySchema>
+
+type FoodLogCreate = z.infer<typeof FoodLogCreateSchema>
+type FoodLogUpdate = z.infer<typeof FoodLogUpdateSchema>
+type FoodLogQuery = z.infer<typeof FoodLogQuerySchema>
+
+type NutritionGoalCreate = z.infer<typeof NutritionGoalCreateSchema>
+type NutritionGoalUpdate = z.infer<typeof NutritionGoalUpdateSchema>
+
+type WaterIntakeCreate = z.infer<typeof WaterIntakeCreateSchema>
+type WaterIntakeUpdate = z.infer<typeof WaterIntakeUpdateSchema>
+type WaterIntakeQuery = z.infer<typeof WaterIntakeQuerySchema>
+
+type MealCreate = z.infer<typeof MealCreateSchema>
+type MealUpdate = z.infer<typeof MealUpdateSchema>
+type MealQuery = z.infer<typeof MealQuerySchema>
+
+/**
+ * Food Repository
+ */
+export class FoodRepository extends BaseRepository<
+  Food,
+  FoodCreate,
+  FoodUpdate,
+  FoodQuery
+> {
+  protected model = 'food'
+  protected createSchema = FoodCreateSchema
+  protected updateSchema = FoodUpdateSchema
+  protected querySchema = FoodQuerySchema
+
+  protected buildWhereClause(query: FoodQuery): any {
+    const where: any = {}
+    
+    if (query.userId !== undefined) {
+      where.OR = [
+        { userId: query.userId }, // User's custom foods
+        { userId: null }          // System foods
+      ]
+    }
+    if (query.category) where.category = query.category
+    if (query.isCustom !== undefined) where.isCustom = query.isCustom
+    
+    if (query.search) {
+      where.OR = where.OR || []
+      where.OR.push(
+        { name: { contains: query.search } },
+        { brand: { contains: query.search } }
+      )
+    }
+
+    return where
+  }
+
+  protected buildOrderByClause(query: FoodQuery): any {
+    return { name: 'asc' }
+  }
+
+  protected getIncludeOptions(): any {
+    return {
+      include: {
+        user: {
+          select: { id: true, email: true }
+        },
+        _count: {
+          select: { 
+            foodLogs: true,
+            mealFoods: true
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Search foods by name or brand with fuzzy matching
+   */
+  async searchFoods(query: string, userId?: string, limit: number = 20): Promise<Food[]> {
+    return this.findMany({
+      search: query,
+      userId,
+      limit
+    })
+  }
+}
+
+/**
+ * Food Log Repository
+ */
+export class FoodLogRepository extends BaseRepository<
+  FoodLog,
+  FoodLogCreate,
+  FoodLogUpdate,
+  FoodLogQuery
+> {
+  protected model = 'foodLog'
+  protected createSchema = FoodLogCreateSchema
+  protected updateSchema = FoodLogUpdateSchema
+  protected querySchema = FoodLogQuerySchema
+
+  protected buildWhereClause(query: FoodLogQuery): any {
+    const where: any = {}
+    
+    if (query.userId) where.userId = query.userId
+    if (query.foodId) where.foodId = query.foodId
+    if (query.mealId) where.mealId = query.mealId
+    
+    if (query.date) {
+      const startOfDay = new Date(query.date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(query.date)
+      endOfDay.setHours(23, 59, 59, 999)
+      
+      where.consumedAt = {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    }
+
+    if (query.dateFrom && query.dateTo) {
+      where.consumedAt = {
+        gte: query.dateFrom,
+        lte: query.dateTo
+      }
+    } else if (query.dateFrom) {
+      where.consumedAt = { gte: query.dateFrom }
+    } else if (query.dateTo) {
+      where.consumedAt = { lte: query.dateTo }
+    }
+
+    return where
+  }
+
+  protected buildOrderByClause(query: FoodLogQuery): any {
+    return { consumedAt: 'desc' }
+  }
+
+  protected getIncludeOptions(): any {
+    return {
+      include: {
+        food: {
+          select: { 
+            id: true, 
+            name: true, 
+            brand: true, 
+            category: true,
+            servingSize: true,
+            servingUnit: true
+          }
+        },
+        meal: {
+          select: { 
+            id: true, 
+            name: true, 
+            mealType: true 
+          }
+        },
+        user: {
+          select: { id: true, email: true }
+        }
+      }
+    }
+  }
+
+  /**
+   * Get food logs for a specific date
+   */
+  async getFoodLogsByDate(userId: string, date: Date): Promise<FoodLog[]> {
+    return this.findMany({
+      userId,
+      date,
+      limit: 1000 // Get all logs for the day
+    })
+  }
+
+  /**
+   * Calculate nutritional totals for a date range
+   */
+  async getNutritionTotals(userId: string, dateFrom: Date, dateTo: Date): Promise<any> {
+    const result = await prisma.foodLog.aggregate({
+      where: {
+        userId,
+        consumedAt: {
+          gte: dateFrom,
+          lte: dateTo
+        }
+      },
+      _sum: {
+        calories: true,
+        protein: true,
+        carbs: true,
+        fat: true,
+        fiber: true,
+        sugar: true,
+        sodium: true
+      }
+    })
+
+    return {
+      calories: result._sum.calories || 0,
+      protein: result._sum.protein || 0,
+      carbs: result._sum.carbs || 0,
+      fat: result._sum.fat || 0,
+      fiber: result._sum.fiber || 0,
+      sugar: result._sum.sugar || 0,
+      sodium: result._sum.sodium || 0
+    }
+  }
+
+  /**
+   * Log food consumption with automatic nutritional calculation
+   */
+  async logFood(userId: string, foodId: string, quantity: number, unit: string, mealId?: string): Promise<FoodLog> {
+    return this.transaction(async ({ tx }) => {
+      // Get the food details
+      const food = await tx.food.findUnique({
+        where: { id: foodId }
+      })
+
+      if (!food) {
+        throw new Error('Food not found')
+      }
+
+      // Convert quantity to grams/ml for calculation
+      let quantityInGrams = quantity
+      if (unit !== 'g' && unit !== 'ml') {
+        // Handle other units - for now assume serving size conversion
+        if (food.servingSize) {
+          quantityInGrams = (quantity * food.servingSize) / 100
+        }
+      } else {
+        quantityInGrams = quantity / 100 // Convert to per-100g basis
+      }
+
+      // Calculate nutritional values
+      const calories = food.caloriesPer100g * quantityInGrams
+      const protein = food.proteinPer100g * quantityInGrams
+      const carbs = food.carbsPer100g * quantityInGrams
+      const fat = food.fatPer100g * quantityInGrams
+      const fiber = food.fiberPer100g ? food.fiberPer100g * quantityInGrams : undefined
+      const sugar = food.sugarPer100g ? food.sugarPer100g * quantityInGrams : undefined
+      const sodium = food.sodiumPer100g ? food.sodiumPer100g * quantityInGrams : undefined
+
+      // Create the food log entry
+      return await tx.foodLog.create({
+        data: {
+          userId,
+          foodId,
+          mealId,
+          quantity,
+          unit,
+          calories,
+          protein,
+          carbs,
+          fat,
+          fiber,
+          sugar,
+          sodium,
+          consumedAt: new Date()
+        }
+      })
+    })
+  }
+}
+
+/**
+ * Nutrition Goal Repository
+ */
+export class NutritionGoalRepository extends BaseRepository<
+  NutritionGoal,
+  NutritionGoalCreate,
+  NutritionGoalUpdate,
+  never
+> {
+  protected model = 'nutritionGoal'
+  protected createSchema = NutritionGoalCreateSchema
+  protected updateSchema = NutritionGoalUpdateSchema
+  protected querySchema = z.object({})
+
+  protected buildWhereClause(): any {
+    return {}
+  }
+
+  protected buildOrderByClause(): any {
+    return { updatedAt: 'desc' }
+  }
+
+  protected getIncludeOptions(): any {
+    return {
+      include: {
+        user: {
+          select: { id: true, email: true }
+        }
+      }
+    }
+  }
+
+  /**
+   * Get user's current nutrition goals (only one active goal per user)
+   */
+  async getUserGoals(userId: string): Promise<NutritionGoal | null> {
+    return prisma.nutritionGoal.findFirst({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' }
+    })
+  }
+
+  /**
+   * Set or update user's nutrition goals
+   */
+  async setUserGoals(userId: string, goals: Omit<NutritionGoalCreate, 'userId'>): Promise<NutritionGoal> {
+    // Delete existing goals and create new ones
+    return this.transaction(async ({ tx }) => {
+      await tx.nutritionGoal.deleteMany({
+        where: { userId }
+      })
+
+      const goalData = {
+        userId,
+        startDate: goals.startDate || new Date(), // Default to current date if not provided
+        ...goals
+      }
+
+      return await tx.nutritionGoal.create({
+        data: goalData
+      })
+    })
+  }
+}
+
+/**
+ * Water Intake Repository
+ */
+export class WaterIntakeRepository extends BaseRepository<
+  WaterIntake,
+  WaterIntakeCreate,
+  WaterIntakeUpdate,
+  WaterIntakeQuery
+> {
+  protected model = 'waterIntake'
+  protected createSchema = WaterIntakeCreateSchema
+  protected updateSchema = WaterIntakeUpdateSchema
+  protected querySchema = WaterIntakeQuerySchema
+
+  protected buildWhereClause(query: WaterIntakeQuery): any {
+    const where: any = {}
+    
+    if (query.userId) where.userId = query.userId
+    if (query.source) where.source = query.source
+    
+    if (query.date) {
+      const startOfDay = new Date(query.date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(query.date)
+      endOfDay.setHours(23, 59, 59, 999)
+      
+      where.date = {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    }
+
+    if (query.dateFrom && query.dateTo) {
+      where.date = {
+        gte: query.dateFrom,
+        lte: query.dateTo
+      }
+    } else if (query.dateFrom) {
+      where.date = { gte: query.dateFrom }
+    } else if (query.dateTo) {
+      where.date = { lte: query.dateTo }
+    }
+
+    return where
+  }
+
+  protected buildOrderByClause(query: WaterIntakeQuery): any {
+    return { recordedAt: 'desc' }
+  }
+
+  protected getIncludeOptions(): any {
+    return {
+      include: {
+        user: {
+          select: { id: true, email: true }
+        }
+      }
+    }
+  }
+
+  /**
+   * Get water intake for a specific date
+   */
+  async getWaterIntakeByDate(userId: string, date: Date): Promise<WaterIntake[]> {
+    return this.findMany({
+      userId,
+      date,
+      limit: 100
+    })
+  }
+
+  /**
+   * Get total water intake for a date
+   */
+  async getTotalWaterIntake(userId: string, date: Date): Promise<number> {
+    const startOfDay = new Date(date)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(date)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    const result = await prisma.waterIntake.aggregate({
+      where: {
+        userId,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      },
+      _sum: {
+        amountMl: true
+      }
+    })
+
+    return result._sum.amountMl || 0
+  }
+
+  /**
+   * Log water intake
+   */
+  async logWaterIntake(userId: string, amountMl: number, source?: string, temperature?: string): Promise<WaterIntake> {
+    const now = new Date()
+    const dateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const amountOz = amountMl * 0.033814 // Convert ml to fl oz
+
+    return this.create({
+      userId,
+      amountMl,
+      amountOz,
+      recordedAt: now,
+      date: dateOnly,
+      source,
+      temperature
+    })
+  }
+}
+
+/**
+ * Meal Repository
+ */
+export class MealRepository extends BaseRepository<
+  Meal,
+  MealCreate,
+  MealUpdate,
+  MealQuery
+> {
+  protected model = 'meal'
+  protected createSchema = MealCreateSchema
+  protected updateSchema = MealUpdateSchema
+  protected querySchema = MealQuerySchema
+
+  protected buildWhereClause(query: MealQuery): any {
+    const where: any = {}
+    
+    if (query.userId) where.userId = query.userId
+    if (query.mealType) where.mealType = query.mealType
+    if (query.isTemplate !== undefined) where.isTemplate = query.isTemplate
+    
+    if (query.date) {
+      const startOfDay = new Date(query.date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(query.date)
+      endOfDay.setHours(23, 59, 59, 999)
+      
+      where.date = {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    }
+
+    if (query.dateFrom && query.dateTo) {
+      where.date = {
+        gte: query.dateFrom,
+        lte: query.dateTo
+      }
+    } else if (query.dateFrom) {
+      where.date = { gte: query.dateFrom }
+    } else if (query.dateTo) {
+      where.date = { lte: query.dateTo }
+    }
+
+    return where
+  }
+
+  protected buildOrderByClause(query: MealQuery): any {
+    return { plannedTime: 'asc' }
+  }
+
+  protected getIncludeOptions(): any {
+    return {
+      include: {
+        user: {
+          select: { id: true, email: true }
+        },
+        mealFoods: {
+          include: {
+            food: {
+              select: { 
+                id: true, 
+                name: true, 
+                brand: true, 
+                category: true 
+              }
+            }
+          },
+          orderBy: { orderIndex: 'asc' }
+        },
+        foodLogs: {
+          include: {
+            food: {
+              select: { 
+                id: true, 
+                name: true, 
+                brand: true, 
+                category: true 
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Get meals for a specific date
+   */
+  async getMealsByDate(userId: string, date: Date): Promise<Meal[]> {
+    return this.findMany({
+      userId,
+      date,
+      isTemplate: false,
+      limit: 10
+    })
+  }
+
+  /**
+   * Create a meal with foods
+   */
+  async createMealWithFoods(
+    userId: string, 
+    mealData: Omit<MealCreate, 'userId'>, 
+    foods: Array<{ foodId: string; quantity: number; unit: string; notes?: string }>
+  ): Promise<Meal> {
+    return this.transaction(async ({ tx }) => {
+      // Create the meal
+      const meal = await tx.meal.create({
+        data: {
+          userId,
+          ...mealData
+        }
+      })
+
+      // Add foods to the meal and calculate totals
+      let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0
+      let totalFiber = 0, totalSugar = 0, totalSodium = 0
+
+      for (let i = 0; i < foods.length; i++) {
+        const { foodId, quantity, unit, notes } = foods[i]
+
+        // Get food nutritional data
+        const food = await tx.food.findUnique({
+          where: { id: foodId }
+        })
+
+        if (!food) continue
+
+        // Add to meal foods
+        await tx.mealFood.create({
+          data: {
+            mealId: meal.id,
+            foodId,
+            quantity,
+            unit,
+            orderIndex: i,
+            notes
+          }
+        })
+
+        // Calculate nutritional contribution (simplified - assumes grams)
+        const factor = quantity / 100 // Convert to per-100g basis
+        totalCalories += food.caloriesPer100g * factor
+        totalProtein += food.proteinPer100g * factor
+        totalCarbs += food.carbsPer100g * factor
+        totalFat += food.fatPer100g * factor
+        totalFiber += (food.fiberPer100g || 0) * factor
+        totalSugar += (food.sugarPer100g || 0) * factor
+        totalSodium += (food.sodiumPer100g || 0) * factor
+      }
+
+      // Update meal totals
+      return await tx.meal.update({
+        where: { id: meal.id },
+        data: {
+          totalCalories,
+          totalProtein,
+          totalCarbs,
+          totalFat,
+          totalFiber,
+          totalSugar,
+          totalSodium
+        },
+        include: {
+          mealFoods: {
+            include: {
+              food: true
+            }
+          }
+        }
+      })
+    })
+  }
+}
+
+/**
+ * Nutrition Dashboard Repository
+ * Aggregates nutrition data for dashboard display
+ */
+export class NutritionDashboardRepository {
+  private foodLogRepo = new FoodLogRepository()
+  private nutritionGoalRepo = new NutritionGoalRepository()
+  private waterIntakeRepo = new WaterIntakeRepository()
+  private mealRepo = new MealRepository()
+
+  /**
+   * Get comprehensive nutrition dashboard data for today
+   */
+  async getDashboardData(userId: string, date: Date = new Date()) {
+    const [
+      todayFoodLogs,
+      nutritionGoals,
+      todayWaterIntake,
+      todayMeals,
+      weeklyStats,
+      nutritionTrends
+    ] = await Promise.all([
+      this.foodLogRepo.getFoodLogsByDate(userId, date),
+      this.nutritionGoalRepo.getUserGoals(userId),
+      this.waterIntakeRepo.getWaterIntakeByDate(userId, date),
+      this.mealRepo.getMealsByDate(userId, date),
+      this.getWeeklyNutritionStats(userId),
+      this.getNutritionTrends(userId, 7) // Last 7 days
+    ])
+
+    // Calculate today's totals
+    const todayTotals = this.calculateTotals(todayFoodLogs)
+    const totalWaterMl = todayWaterIntake.reduce((sum, intake) => sum + intake.amountMl, 0)
+
+    // Calculate goal progress if goals exist
+    let goalProgress = null
+    if (nutritionGoals) {
+      goalProgress = {
+        calories: {
+          current: todayTotals.calories,
+          target: nutritionGoals.dailyCalories,
+          percentage: Math.round((todayTotals.calories / nutritionGoals.dailyCalories) * 100)
+        },
+        protein: {
+          current: todayTotals.protein,
+          target: nutritionGoals.dailyProtein,
+          percentage: Math.round((todayTotals.protein / nutritionGoals.dailyProtein) * 100)
+        },
+        carbs: {
+          current: todayTotals.carbs,
+          target: nutritionGoals.dailyCarbs,
+          percentage: Math.round((todayTotals.carbs / nutritionGoals.dailyCarbs) * 100)
+        },
+        fat: {
+          current: todayTotals.fat,
+          target: nutritionGoals.dailyFat,
+          percentage: Math.round((todayTotals.fat / nutritionGoals.dailyFat) * 100)
+        }
+      }
+    }
+
+    return {
+      date,
+      todayTotals,
+      nutritionGoals,
+      goalProgress,
+      totalWaterMl,
+      waterGoalMl: 2000, // Default goal, should be configurable
+      waterProgress: Math.round((totalWaterMl / 2000) * 100),
+      todayFoodLogs,
+      todayMeals,
+      weeklyStats,
+      nutritionTrends,
+      stats: {
+        foodsLogged: todayFoodLogs.length,
+        mealsPlanned: todayMeals.length,
+        waterGlassesCount: Math.round(totalWaterMl / 250), // Assuming 250ml per glass
+        caloriesRemaining: nutritionGoals ? Math.max(0, nutritionGoals.dailyCalories - todayTotals.calories) : null
+      }
+    }
+  }
+
+  private calculateTotals(foodLogs: FoodLog[]) {
+    return foodLogs.reduce((totals, log) => ({
+      calories: totals.calories + log.calories,
+      protein: totals.protein + log.protein,
+      carbs: totals.carbs + log.carbs,
+      fat: totals.fat + log.fat,
+      fiber: totals.fiber + (log.fiber || 0),
+      sugar: totals.sugar + (log.sugar || 0),
+      sodium: totals.sodium + (log.sodium || 0)
+    }), {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      sugar: 0,
+      sodium: 0
+    })
+  }
+
+  private async getWeeklyNutritionStats(userId: string) {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+
+    return await this.foodLogRepo.getNutritionTotals(userId, weekAgo, new Date())
+  }
+
+  private async getNutritionTrends(userId: string, days: number) {
+    const trends = []
+    
+    for (let i = 0; i < days; i++) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      
+      const dayStart = new Date(date)
+      dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(date)
+      dayEnd.setHours(23, 59, 59, 999)
+
+      const dayTotals = await this.foodLogRepo.getNutritionTotals(userId, dayStart, dayEnd)
+      const waterTotal = await this.waterIntakeRepo.getTotalWaterIntake(userId, date)
+
+      trends.unshift({
+        date: dayStart,
+        ...dayTotals,
+        water: waterTotal
+      })
+    }
+
+    return trends
+  }
+}
+
 // Export repository instances
 export const workoutPlanRepository = new WorkoutPlanRepository()
 export const workoutRepository = new WorkoutRepository()
@@ -1428,3 +2327,11 @@ export const workoutExerciseRepository = new WorkoutExerciseRepository()
 export const workoutSetRepository = new WorkoutSetRepository()
 export const personalRecordRepository = new PersonalRecordRepository()
 export const fitnessDashboardRepository = new FitnessDashboardRepository()
+
+// Export nutrition repository instances
+export const foodRepository = new FoodRepository()
+export const foodLogRepository = new FoodLogRepository()
+export const nutritionGoalRepository = new NutritionGoalRepository()
+export const waterIntakeRepository = new WaterIntakeRepository()
+export const mealRepository = new MealRepository()
+export const nutritionDashboardRepository = new NutritionDashboardRepository()

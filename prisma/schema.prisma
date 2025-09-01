@@ -70,6 +70,13 @@ model User {
   exerciseTemplates  ExerciseTemplate[]
   personalRecords    PersonalRecord[]
 
+  // Nutrition-specific relations
+  foods              Food[]
+  foodLogs           FoodLog[]
+  nutritionGoals     NutritionGoal[]
+  waterIntakes       WaterIntake[]
+  meals              Meal[]
+
   @@map("User")
 }
 
@@ -709,4 +716,247 @@ model PersonalRecord {
   @@index([userId, achievedAt])
   @@index([exerciseId, recordType])
   @@map("PersonalRecord")
+}
+
+// Nutrition Module Models
+
+// Food database - master list of foods with nutritional information
+model Food {
+  id               String   @id @default(cuid())
+  name             String
+  brand            String?  // Brand name (e.g., "Quaker", "Kellogg's")
+  barcode          String?  // UPC/EAN barcode for scanning
+  category         String   // 'fruit', 'vegetable', 'meat', 'dairy', 'grain', 'snack', etc.
+  
+  // Nutritional information per 100g/ml
+  caloriesPer100g  Float
+  proteinPer100g   Float    // grams
+  carbsPer100g     Float    // grams  
+  fatPer100g       Float    // grams
+  fiberPer100g     Float?   // grams
+  sugarPer100g     Float?   // grams
+  sodiumPer100g    Float?   // milligrams
+  
+  // Serving information
+  servingSize      Float?   // Default serving size in grams/ml
+  servingUnit      String   @default("g") // 'g', 'ml', 'cup', 'piece', etc.
+  
+  // Additional nutritional data (optional)
+  saturatedFatPer100g     Float?   // grams
+  transFatPer100g         Float?   // grams  
+  cholesterolPer100g      Float?   // milligrams
+  vitaminAPer100g         Float?   // mcg RAE
+  vitaminCPer100g         Float?   // milligrams
+  calciumPer100g          Float?   // milligrams
+  ironPer100g             Float?   // milligrams
+  potassiumPer100g        Float?   // milligrams
+  
+  // Food metadata
+  isVerified       Boolean  @default(false) // Admin-verified foods vs user-submitted
+  isPublic         Boolean  @default(true)  // Public foods vs private user foods
+  userId           String?  // null for public foods, set for user-created foods
+  source           String?  // 'USDA', 'user', 'manufacturer', etc.
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodLogs         FoodLog[]
+  mealFoods        MealFood[]
+  
+  @@index([name, category])
+  @@index([barcode]) // For barcode scanning
+  @@index([userId, isPublic])
+  @@index([category, isVerified])
+  @@map("Food")
+}
+
+// User food intake logs - what users actually eat
+model FoodLog {
+  id          String    @id @default(cuid())
+  userId      String
+  foodId      String
+  mealId      String?   // Optional link to meal
+  
+  // Consumption details
+  quantity    Float     // Amount consumed
+  unit        String    // 'g', 'ml', 'cup', 'piece', etc.
+  
+  // Calculated nutritional values based on quantity
+  calories    Float
+  protein     Float     // grams
+  carbs       Float     // grams
+  fat         Float     // grams
+  fiber       Float?    // grams
+  sugar       Float?    // grams
+  sodium      Float?    // milligrams
+  
+  // Consumption timing
+  consumedAt  DateTime  @default(now())
+  mealType    String?   // 'breakfast', 'lunch', 'dinner', 'snack'
+  
+  // Additional metadata
+  notes       String?
+  isQuickAdd  Boolean   @default(false) // Quick calorie addition vs detailed logging
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  food        Food      @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  meal        Meal?     @relation(fields: [mealId], references: [id], onDelete: SetNull)
+  
+  @@index([userId, consumedAt])
+  @@index([userId, mealType])
+  @@index([foodId])
+  @@index([mealId])
+  @@map("FoodLog")
+}
+
+// User nutrition goals and targets
+model NutritionGoal {
+  id                String    @id @default(cuid())
+  userId            String
+  
+  // Daily targets
+  dailyCalories     Float
+  dailyProtein      Float     // grams
+  dailyCarbs        Float     // grams  
+  dailyFat          Float     // grams
+  dailyFiber        Float?    // grams
+  dailySugar        Float?    // grams (limit)
+  dailySodium       Float?    // milligrams (limit)
+  
+  // Macronutrient percentages (should add up to 100)
+  proteinPercentage Float?    // % of calories from protein
+  carbsPercentage   Float?    // % of calories from carbs
+  fatPercentage     Float?    // % of calories from fat
+  
+  // Goal metadata
+  goalType          String    @default("general") // 'weight_loss', 'weight_gain', 'maintenance', 'muscle_gain', 'general'
+  activityLevel     String    @default("moderate") // 'sedentary', 'light', 'moderate', 'active', 'very_active'
+  
+  // Date range for goal
+  startDate         DateTime
+  endDate           DateTime?
+  isActive          Boolean   @default(true)
+  
+  // Goal tracking
+  weeklyWeightGoal  Float?    // lbs/kg per week (+ for gain, - for loss)
+  currentWeight     Float?    // lbs/kg
+  targetWeight      Float?    // lbs/kg
+  heightCm          Float?    // cm
+  age               Int?      // years
+  gender            String?   // 'male', 'female', 'other'
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isActive])
+  @@index([userId, startDate])
+  @@map("NutritionGoal")
+}
+
+// Daily water intake tracking
+model WaterIntake {
+  id          String   @id @default(cuid())
+  userId      String
+  
+  // Water consumption  
+  amountMl    Float    // Amount in milliliters
+  amountOz    Float?   // Amount in fluid ounces (calculated)
+  
+  // Timing and context
+  recordedAt  DateTime @default(now())
+  date        DateTime // Date only for daily aggregation
+  source      String?  // 'water', 'tea', 'coffee', 'juice', 'other'
+  
+  // Metadata
+  notes       String?
+  temperature String?  // 'cold', 'room', 'warm', 'hot'
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, date])
+  @@index([userId, recordedAt])
+  @@map("WaterIntake")
+}
+
+// Meals - grouping foods together by meal occasion
+model Meal {
+  id            String     @id @default(cuid())
+  userId        String
+  
+  // Meal information
+  name          String     // 'Breakfast', 'Lunch', 'Chicken Salad', etc.
+  mealType      String     // 'breakfast', 'lunch', 'dinner', 'snack'
+  date          DateTime   // Date of the meal
+  
+  // Timing
+  plannedTime   DateTime?  // When the meal is planned
+  consumedTime  DateTime?  // When actually consumed
+  
+  // Calculated totals (aggregate of all foods in meal)
+  totalCalories Float      @default(0)
+  totalProtein  Float      @default(0)
+  totalCarbs    Float      @default(0)
+  totalFat      Float      @default(0)
+  totalFiber    Float?     @default(0)
+  totalSugar    Float?     @default(0)
+  totalSodium   Float?     @default(0)
+  
+  // Meal metadata
+  isTemplate    Boolean    @default(false) // Reusable meal templates
+  isFavorite    Boolean    @default(false)
+  rating        Int?       // 1-5 star rating
+  notes         String?
+  photoUrl      String?    // Photo of the meal
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Relations
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodLogs      FoodLog[]  // Foods consumed in this meal
+  mealFoods     MealFood[] // For meal templates/recipes
+  
+  @@index([userId, date])
+  @@index([userId, mealType])
+  @@index([userId, isTemplate])
+  @@map("Meal")
+}
+
+// Junction table for meal templates and recipes  
+model MealFood {
+  id         String   @id @default(cuid())
+  mealId     String
+  foodId     String
+  
+  // Quantity in the meal template/recipe
+  quantity   Float
+  unit       String   // 'g', 'ml', 'cup', 'piece', etc.
+  
+  // Order in the meal
+  orderIndex Int      @default(0)
+  
+  // Optional preparation notes for this food in the meal
+  notes      String?
+  
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  meal       Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  food       Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  
+  @@unique([mealId, foodId]) // Each food can only appear once per meal template
+  @@index([mealId, orderIndex])
+  @@map("MealFood")
 }

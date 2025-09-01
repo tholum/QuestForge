@@ -15,7 +15,8 @@ const TABS = [
   { id: 'dashboard', label: 'Dashboard', path: '/modules/fitness/dashboard' },
   { id: 'exercises', label: 'Exercise Library', path: '/modules/fitness/exercises' },
   { id: 'workouts', label: 'Workouts', path: '/modules/fitness/workouts' },
-  { id: 'progress', label: 'Progress', path: '/modules/fitness/progress' }
+  { id: 'progress', label: 'Progress', path: '/modules/fitness/progress' },
+  { id: 'nutrition', label: 'Nutrition', path: '/modules/fitness/nutrition' }
 ]
 
 export default function FitnessLayout({

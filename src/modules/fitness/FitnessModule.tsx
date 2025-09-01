@@ -27,6 +27,16 @@ const WorkoutPlanningView = lazy(() =>
   })
 );
 
+const NutritionView = lazy(() => 
+  import('../../components/nutrition/NutritionView').then(mod => ({
+    default: mod.NutritionView
+  })).catch(error => {
+    console.error('Failed to load NutritionView:', error);
+    // Return a fallback component
+    return { default: () => <div className="p-4 text-red-600">Failed to load Nutrition View</div> };
+  })
+);
+
 // Component wrapper with error boundary for HMR issues
 const ComponentWrapper: React.FC<{ children: React.ReactNode; fallbackMessage?: string }> = ({ 
   children, 
@@ -166,10 +176,10 @@ const FitnessDesktopDetail = ({ moduleId, userId, config }: any) => {
       <h2 className="text-2xl font-bold mb-6" data-testid="module-title">Fitness Tracker</h2>
       
       {/* Tab Navigation */}
-      <div className="flex space-x-1 mb-6 p-1 bg-gray-100 rounded-lg">
+      <div className="flex space-x-1 mb-6 p-1 bg-gray-100 rounded-lg overflow-x-auto">
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
             activeTab === 'dashboard'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
@@ -179,7 +189,7 @@ const FitnessDesktopDetail = ({ moduleId, userId, config }: any) => {
         </button>
         <button
           onClick={() => setActiveTab('exercises')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
             activeTab === 'exercises'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
@@ -189,7 +199,7 @@ const FitnessDesktopDetail = ({ moduleId, userId, config }: any) => {
         </button>
         <button
           onClick={() => setActiveTab('workouts')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
             activeTab === 'workouts'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
@@ -198,8 +208,18 @@ const FitnessDesktopDetail = ({ moduleId, userId, config }: any) => {
           Workouts
         </button>
         <button
+          onClick={() => setActiveTab('nutrition')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
+            activeTab === 'nutrition'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Nutrition
+        </button>
+        <button
           onClick={() => setActiveTab('progress')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
             activeTab === 'progress'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
@@ -289,6 +309,16 @@ const FitnessDesktopDetail = ({ moduleId, userId, config }: any) => {
                 // Could trigger XP awards or achievement checks
               }}
             />
+          </ComponentWrapper>
+        </div>
+      )}
+
+      {activeTab === 'nutrition' && (
+        <div className="bg-white rounded-lg shadow p-0">
+          <ComponentWrapper fallbackMessage="Failed to load Nutrition Tracker">
+            <div className="p-6">
+              <NutritionView userId={userId} />
+            </div>
           </ComponentWrapper>
         </div>
       )}

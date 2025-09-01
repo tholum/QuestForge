@@ -317,6 +317,14 @@ class DatabaseClient {
   get workoutSet() { return this.client.workoutSet }
   get personalRecord() { return this.client.personalRecord }
   
+  // Nutrition Module models
+  get food() { return this.client.food }
+  get foodLog() { return this.client.foodLog }
+  get nutritionGoal() { return this.client.nutritionGoal }
+  get waterIntake() { return this.client.waterIntake }
+  get meal() { return this.client.meal }
+  get mealFood() { return this.client.mealFood }
+  
   // User and system models
   get userSetting() { return this.client.userSetting }
   get userModuleConfig() { return this.client.userModuleConfig }

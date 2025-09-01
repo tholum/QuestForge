@@ -60,11 +60,16 @@ async function main() {
     // Seed fitness exercise templates (essential for fitness module)
     await seedFitnessExerciseTemplates()
 
+    // Seed nutrition food database (essential for nutrition module)
+    await seedNutritionFoodDatabase()
+
     // Seed test data only for development and test
     if (config.createFullData) {
       const users = await seedUsers()
       await seedGoals(users)
       await seedProgress()
+      await seedFitnessWorkouts(users)
+      await seedNutritionData(users)
     }
 
     console.log('✅ Database seeded successfully!')
@@ -104,6 +109,14 @@ async function cleanDatabase() {
   await prisma.workout.deleteMany()
   await prisma.exerciseTemplate.deleteMany()
   await prisma.workoutPlan.deleteMany()
+
+  // Nutrition related tables
+  await prisma.mealFood.deleteMany()
+  await prisma.foodLog.deleteMany()
+  await prisma.meal.deleteMany()
+  await prisma.waterIntake.deleteMany()
+  await prisma.nutritionGoal.deleteMany()
+  await prisma.food.deleteMany()
   
   await prisma.user.deleteMany()
   await prisma.module.deleteMany()
@@ -1389,6 +1402,850 @@ async function seedFitnessExerciseTemplates() {
   }
 
   console.log(`✅ Created ${exerciseTemplates.length} exercise templates`)
+}
+
+/**
+ * Seed fitness workouts for testing workout execution
+ */
+async function seedFitnessWorkouts(users: any[]) {
+  if (!users.length) return
+
+  console.log('🏋️ Seeding fitness workouts...')
+
+  // First, get some exercise templates to use in workouts
+  const exercises = await prisma.exerciseTemplate.findMany({
+    where: { isCustom: false },
+    take: 20 // Get first 20 system exercises
+  })
+
+  if (exercises.length === 0) {
+    console.log('No exercise templates found, skipping workout seeding')
+    return
+  }
+
+  // Create workout plans for users
+  const workoutPlans = []
+  for (const user of users) {
+    const plan = await prisma.workoutPlan.create({
+      data: {
+        name: 'Beginner Fitness Plan',
+        description: 'A comprehensive workout plan for fitness beginners',
+        userId: user.id,
+        isTemplate: false,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
+        isActive: true
+      }
+    })
+    workoutPlans.push(plan)
+  }
+
+  // Create sample workouts for each user
+  const workoutTemplates = [
+    {
+      name: 'Upper Body Strength',
+      description: 'Focus on chest, back, shoulders, and arms',
+      workoutType: 'strength' as const,
+      estimatedDuration: 45,
+      exercises: [
+        { templateName: 'Push-ups', targetSets: 3, targetReps: 12, restBetweenSets: 60 },
+        { templateName: 'Pull-ups', targetSets: 3, targetReps: 8, restBetweenSets: 90 },
+        { templateName: 'Overhead Press', targetSets: 3, targetReps: 10, targetWeight: 25, restBetweenSets: 90 },
+        { templateName: 'Bent-over Rows', targetSets: 3, targetReps: 10, targetWeight: 30, restBetweenSets: 90 },
+        { templateName: 'Bicep Curls', targetSets: 3, targetReps: 12, targetWeight: 15, restBetweenSets: 60 },
+        { templateName: 'Tricep Dips', targetSets: 3, targetReps: 10, restBetweenSets: 60 }
+      ]
+    },
+    {
+      name: 'Lower Body Power',
+      description: 'Target legs and glutes with compound movements',
+      workoutType: 'strength' as const,
+      estimatedDuration: 50,
+      exercises: [
+        { templateName: 'Squats', targetSets: 4, targetReps: 12, targetWeight: 45, restBetweenSets: 120 },
+        { templateName: 'Romanian Deadlifts', targetSets: 3, targetReps: 10, targetWeight: 40, restBetweenSets: 120 },
+        { templateName: 'Lunges', targetSets: 3, targetReps: 10, restBetweenSets: 90 },
+        { templateName: 'Leg Press', targetSets: 3, targetReps: 15, targetWeight: 100, restBetweenSets: 90 },
+        { templateName: 'Calf Raises', targetSets: 4, targetReps: 15, restBetweenSets: 60 }
+      ]
+    },
+    {
+      name: 'Cardio Blast',
+      description: 'High intensity cardio workout',
+      workoutType: 'cardio' as const,
+      estimatedDuration: 30,
+      exercises: [
+        { templateName: 'Jumping Jacks', targetSets: 4, targetDuration: 60, restBetweenSets: 30 },
+        { templateName: 'High Knees', targetSets: 4, targetDuration: 45, restBetweenSets: 30 },
+        { templateName: 'Burpees', targetSets: 3, targetReps: 10, restBetweenSets: 60 },
+        { templateName: 'Mountain Climbers', targetSets: 3, targetDuration: 45, restBetweenSets: 45 },
+        { templateName: 'Running', targetSets: 1, targetDuration: 300, restBetweenSets: 0 } // 5 minutes
+      ]
+    },
+    {
+      name: 'Core & Flexibility',
+      description: 'Core strengthening with flexibility work',
+      workoutType: 'flexibility' as const,
+      estimatedDuration: 35,
+      exercises: [
+        { templateName: 'Plank', targetSets: 3, targetDuration: 45, restBetweenSets: 60 },
+        { templateName: 'Crunches', targetSets: 3, targetReps: 15, restBetweenSets: 45 },
+        { templateName: 'Russian Twists', targetSets: 3, targetReps: 20, restBetweenSets: 45 },
+        { templateName: 'Dead Bug', targetSets: 3, targetReps: 10, restBetweenSets: 45 },
+        { templateName: 'Hip Flexor Stretch', targetSets: 2, targetDuration: 30, restBetweenSets: 15 },
+        { templateName: 'Cat-Cow Stretch', targetSets: 2, targetReps: 10, restBetweenSets: 15 }
+      ]
+    },
+    {
+      name: 'Full Body Circuit',
+      description: 'Complete body workout combining strength and cardio',
+      workoutType: 'mixed' as const,
+      estimatedDuration: 40,
+      exercises: [
+        { templateName: 'Squats', targetSets: 3, targetReps: 12, restBetweenSets: 45 },
+        { templateName: 'Push-ups', targetSets: 3, targetReps: 10, restBetweenSets: 45 },
+        { templateName: 'Mountain Climbers', targetSets: 3, targetDuration: 30, restBetweenSets: 45 },
+        { templateName: 'Plank', targetSets: 3, targetDuration: 30, restBetweenSets: 45 },
+        { templateName: 'Jumping Jacks', targetSets: 3, targetDuration: 45, restBetweenSets: 60 },
+        { templateName: 'Burpees', targetSets: 2, targetReps: 8, restBetweenSets: 90 }
+      ]
+    }
+  ]
+
+  const createdWorkouts = []
+
+  for (const user of users) {
+    const userPlan = workoutPlans.find(p => p.userId === user.id)
+    
+    for (let i = 0; i < workoutTemplates.length; i++) {
+      const template = workoutTemplates[i]
+      
+      // Create workout scheduled for different days
+      const scheduledDate = new Date()
+      scheduledDate.setDate(scheduledDate.getDate() + i)
+      scheduledDate.setHours(9, 0, 0, 0) // 9 AM
+      
+      const workout = await prisma.workout.create({
+        data: {
+          name: template.name,
+          description: template.description,
+          workoutType: template.workoutType,
+          estimatedDuration: template.estimatedDuration,
+          scheduledDate: scheduledDate,
+          userId: user.id,
+          planId: userPlan?.id
+        }
+      })
+
+      // Add exercises to the workout
+      for (let j = 0; j < template.exercises.length; j++) {
+        const exerciseTemplate = template.exercises[j]
+        const exercise = exercises.find(e => e.name === exerciseTemplate.templateName)
+        
+        if (exercise) {
+          await prisma.workoutExercise.create({
+            data: {
+              workoutId: workout.id,
+              exerciseId: exercise.id,
+              orderIndex: j,
+              targetSets: exerciseTemplate.targetSets,
+              targetReps: exerciseTemplate.targetReps,
+              targetWeight: exerciseTemplate.targetWeight,
+              targetDuration: exerciseTemplate.targetDuration,
+              restBetweenSets: exerciseTemplate.restBetweenSets
+            }
+          })
+        }
+      }
+
+      createdWorkouts.push(workout)
+    }
+  }
+
+  // Create some workout templates (not scheduled, just templates)
+  const templateWorkouts = []
+  for (let i = 0; i < workoutTemplates.length; i++) {
+    const template = workoutTemplates[i]
+    
+    const templateWorkout = await prisma.workout.create({
+      data: {
+        name: template.name,
+        description: template.description,
+        workoutType: template.workoutType,
+        estimatedDuration: template.estimatedDuration,
+        userId: users[0].id, // Associate templates with first user
+        isTemplate: true // Mark as template
+      }
+    })
+
+    // Add exercises to the template
+    for (let j = 0; j < template.exercises.length; j++) {
+      const exerciseTemplate = template.exercises[j]
+      const exercise = exercises.find(e => e.name === exerciseTemplate.templateName)
+      
+      if (exercise) {
+        await prisma.workoutExercise.create({
+          data: {
+            workoutId: templateWorkout.id,
+            exerciseId: exercise.id,
+            orderIndex: j,
+            targetSets: exerciseTemplate.targetSets,
+            targetReps: exerciseTemplate.targetReps,
+            targetWeight: exerciseTemplate.targetWeight,
+            targetDuration: exerciseTemplate.targetDuration,
+            restBetweenSets: exerciseTemplate.restBetweenSets
+          }
+        })
+      }
+    }
+
+    templateWorkouts.push(templateWorkout)
+  }
+
+  console.log(`✅ Created ${createdWorkouts.length} sample workouts across ${workoutPlans.length} workout plans`)
+  console.log(`✅ Created ${templateWorkouts.length} workout templates`)
+}
+
+/**
+ * Seed nutrition food database with common foods
+ */
+async function seedNutritionFoodDatabase() {
+  console.log('🥗 Seeding nutrition food database...')
+
+  const foods = [
+    // FRUITS
+    {
+      name: 'Apple',
+      brand: null,
+      barcode: null,
+      category: 'fruit',
+      caloriesPer100g: 52,
+      proteinPer100g: 0.3,
+      carbsPer100g: 14,
+      fatPer100g: 0.2,
+      fiberPer100g: 2.4,
+      sugarPer100g: 10.4,
+      sodiumPer100g: 1,
+      servingSize: 182, // medium apple
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.1,
+      vitaminCPer100g: 4.6,
+      potassiumPer100g: 107,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Banana',
+      brand: null,
+      barcode: null,
+      category: 'fruit',
+      caloriesPer100g: 89,
+      proteinPer100g: 1.1,
+      carbsPer100g: 23,
+      fatPer100g: 0.3,
+      fiberPer100g: 2.6,
+      sugarPer100g: 12.2,
+      sodiumPer100g: 1,
+      servingSize: 118, // medium banana
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.1,
+      vitaminCPer100g: 8.7,
+      potassiumPer100g: 358,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Orange',
+      brand: null,
+      barcode: null,
+      category: 'fruit',
+      caloriesPer100g: 47,
+      proteinPer100g: 0.9,
+      carbsPer100g: 12,
+      fatPer100g: 0.1,
+      fiberPer100g: 2.4,
+      sugarPer100g: 9.4,
+      sodiumPer100g: 0,
+      servingSize: 131, // medium orange
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.02,
+      vitaminCPer100g: 53.2,
+      calciumPer100g: 40,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Blueberries',
+      brand: null,
+      barcode: null,
+      category: 'fruit',
+      caloriesPer100g: 57,
+      proteinPer100g: 0.7,
+      carbsPer100g: 14,
+      fatPer100g: 0.3,
+      fiberPer100g: 2.4,
+      sugarPer100g: 10,
+      sodiumPer100g: 1,
+      servingSize: 148, // 1 cup
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.1,
+      vitaminCPer100g: 9.7,
+      potassiumPer100g: 77,
+      isVerified: true,
+      source: 'USDA'
+    },
+
+    // VEGETABLES
+    {
+      name: 'Broccoli',
+      brand: null,
+      barcode: null,
+      category: 'vegetable',
+      caloriesPer100g: 34,
+      proteinPer100g: 2.8,
+      carbsPer100g: 7,
+      fatPer100g: 0.4,
+      fiberPer100g: 2.6,
+      sugarPer100g: 1.5,
+      sodiumPer100g: 33,
+      servingSize: 91, // 1 cup chopped
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.1,
+      vitaminCPer100g: 89.2,
+      vitaminAPer100g: 31,
+      calciumPer100g: 47,
+      ironPer100g: 0.7,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Spinach',
+      brand: null,
+      barcode: null,
+      category: 'vegetable',
+      caloriesPer100g: 23,
+      proteinPer100g: 2.9,
+      carbsPer100g: 3.6,
+      fatPer100g: 0.4,
+      fiberPer100g: 2.2,
+      sugarPer100g: 0.4,
+      sodiumPer100g: 79,
+      servingSize: 30, // 1 cup fresh
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.1,
+      vitaminAPer100g: 469,
+      vitaminCPer100g: 28.1,
+      calciumPer100g: 99,
+      ironPer100g: 2.7,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Carrot',
+      brand: null,
+      barcode: null,
+      category: 'vegetable',
+      caloriesPer100g: 41,
+      proteinPer100g: 0.9,
+      carbsPer100g: 10,
+      fatPer100g: 0.2,
+      fiberPer100g: 2.8,
+      sugarPer100g: 4.7,
+      sodiumPer100g: 69,
+      servingSize: 61, // 1 medium carrot
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.04,
+      vitaminAPer100g: 835,
+      vitaminCPer100g: 5.9,
+      potassiumPer100g: 320,
+      isVerified: true,
+      source: 'USDA'
+    },
+
+    // GRAINS & CEREALS
+    {
+      name: 'Brown Rice',
+      brand: null,
+      barcode: null,
+      category: 'grain',
+      caloriesPer100g: 111,
+      proteinPer100g: 2.6,
+      carbsPer100g: 23,
+      fatPer100g: 0.9,
+      fiberPer100g: 1.8,
+      sugarPer100g: 0.4,
+      sodiumPer100g: 5,
+      servingSize: 195, // 1 cup cooked
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.2,
+      ironPer100g: 0.4,
+      potassiumPer100g: 43,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Quinoa',
+      brand: null,
+      barcode: null,
+      category: 'grain',
+      caloriesPer100g: 120,
+      proteinPer100g: 4.4,
+      carbsPer100g: 22,
+      fatPer100g: 1.9,
+      fiberPer100g: 2.8,
+      sugarPer100g: 0.9,
+      sodiumPer100g: 7,
+      servingSize: 185, // 1 cup cooked
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.2,
+      ironPer100g: 1.5,
+      potassiumPer100g: 172,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Oats',
+      brand: null,
+      barcode: null,
+      category: 'grain',
+      caloriesPer100g: 68,
+      proteinPer100g: 2.4,
+      carbsPer100g: 12,
+      fatPer100g: 1.4,
+      fiberPer100g: 1.7,
+      sugarPer100g: 0.3,
+      sodiumPer100g: 4,
+      servingSize: 234, // 1 cup cooked
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.2,
+      ironPer100g: 1.0,
+      potassiumPer100g: 70,
+      isVerified: true,
+      source: 'USDA'
+    },
+
+    // PROTEIN SOURCES
+    {
+      name: 'Chicken Breast',
+      brand: null,
+      barcode: null,
+      category: 'meat',
+      caloriesPer100g: 165,
+      proteinPer100g: 31,
+      carbsPer100g: 0,
+      fatPer100g: 3.6,
+      fiberPer100g: 0,
+      sugarPer100g: 0,
+      sodiumPer100g: 74,
+      servingSize: 85, // 3 oz
+      servingUnit: 'g',
+      saturatedFatPer100g: 1.0,
+      cholesterolPer100g: 85,
+      ironPer100g: 0.4,
+      potassiumPer100g: 256,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Salmon',
+      brand: null,
+      barcode: null,
+      category: 'fish',
+      caloriesPer100g: 208,
+      proteinPer100g: 25,
+      carbsPer100g: 0,
+      fatPer100g: 12,
+      fiberPer100g: 0,
+      sugarPer100g: 0,
+      sodiumPer100g: 59,
+      servingSize: 85, // 3 oz
+      servingUnit: 'g',
+      saturatedFatPer100g: 3.1,
+      cholesterolPer100g: 59,
+      ironPer100g: 0.8,
+      potassiumPer100g: 363,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Eggs',
+      brand: null,
+      barcode: null,
+      category: 'protein',
+      caloriesPer100g: 155,
+      proteinPer100g: 13,
+      carbsPer100g: 1.1,
+      fatPer100g: 11,
+      fiberPer100g: 0,
+      sugarPer100g: 1.1,
+      sodiumPer100g: 124,
+      servingSize: 50, // 1 large egg
+      servingUnit: 'g',
+      saturatedFatPer100g: 3.3,
+      cholesterolPer100g: 373,
+      vitaminAPer100g: 160,
+      ironPer100g: 1.8,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Greek Yogurt',
+      brand: null,
+      barcode: null,
+      category: 'dairy',
+      caloriesPer100g: 59,
+      proteinPer100g: 10,
+      carbsPer100g: 3.6,
+      fatPer100g: 0.4,
+      fiberPer100g: 0,
+      sugarPer100g: 3.6,
+      sodiumPer100g: 36,
+      servingSize: 170, // 3/4 cup
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.1,
+      calciumPer100g: 110,
+      potassiumPer100g: 141,
+      isVerified: true,
+      source: 'USDA'
+    },
+
+    // NUTS & SEEDS
+    {
+      name: 'Almonds',
+      brand: null,
+      barcode: null,
+      category: 'nuts',
+      caloriesPer100g: 579,
+      proteinPer100g: 21,
+      carbsPer100g: 22,
+      fatPer100g: 50,
+      fiberPer100g: 12,
+      sugarPer100g: 4.4,
+      sodiumPer100g: 1,
+      servingSize: 28, // 1 oz (about 23 almonds)
+      servingUnit: 'g',
+      saturatedFatPer100g: 3.8,
+      vitaminAPer100g: 0.3,
+      calciumPer100g: 269,
+      ironPer100g: 3.7,
+      potassiumPer100g: 733,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Peanut Butter',
+      brand: null,
+      barcode: null,
+      category: 'nuts',
+      caloriesPer100g: 588,
+      proteinPer100g: 25,
+      carbsPer100g: 20,
+      fatPer100g: 50,
+      fiberPer100g: 6,
+      sugarPer100g: 9.2,
+      sodiumPer100g: 17,
+      servingSize: 32, // 2 tbsp
+      servingUnit: 'g',
+      saturatedFatPer100g: 10,
+      ironPer100g: 1.9,
+      potassiumPer100g: 649,
+      isVerified: true,
+      source: 'USDA'
+    },
+
+    // BEVERAGES
+    {
+      name: 'Whole Milk',
+      brand: null,
+      barcode: null,
+      category: 'dairy',
+      caloriesPer100g: 61,
+      proteinPer100g: 3.2,
+      carbsPer100g: 4.8,
+      fatPer100g: 3.2,
+      fiberPer100g: 0,
+      sugarPer100g: 5.1,
+      sodiumPer100g: 40,
+      servingSize: 240, // 1 cup
+      servingUnit: 'ml',
+      saturatedFatPer100g: 1.9,
+      cholesterolPer100g: 10,
+      calciumPer100g: 113,
+      potassiumPer100g: 132,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'Orange Juice',
+      brand: null,
+      barcode: null,
+      category: 'beverage',
+      caloriesPer100g: 45,
+      proteinPer100g: 0.7,
+      carbsPer100g: 10,
+      fatPer100g: 0.2,
+      fiberPer100g: 0.2,
+      sugarPer100g: 8.4,
+      sodiumPer100g: 1,
+      servingSize: 240, // 1 cup
+      servingUnit: 'ml',
+      saturatedFatPer100g: 0.03,
+      vitaminCPer100g: 50,
+      calciumPer100g: 11,
+      potassiumPer100g: 200,
+      isVerified: true,
+      source: 'USDA'
+    },
+
+    // PROCESSED FOODS
+    {
+      name: 'Pasta',
+      brand: null,
+      barcode: null,
+      category: 'grain',
+      caloriesPer100g: 131,
+      proteinPer100g: 5,
+      carbsPer100g: 25,
+      fatPer100g: 1.1,
+      fiberPer100g: 1.8,
+      sugarPer100g: 0.6,
+      sodiumPer100g: 1,
+      servingSize: 140, // 1 cup cooked
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.2,
+      ironPer100g: 0.9,
+      isVerified: true,
+      source: 'USDA'
+    },
+    {
+      name: 'White Bread',
+      brand: null,
+      barcode: null,
+      category: 'grain',
+      caloriesPer100g: 265,
+      proteinPer100g: 9,
+      carbsPer100g: 49,
+      fatPer100g: 3.2,
+      fiberPer100g: 2.7,
+      sugarPer100g: 5.7,
+      sodiumPer100g: 681,
+      servingSize: 28, // 1 slice
+      servingUnit: 'g',
+      saturatedFatPer100g: 0.8,
+      ironPer100g: 3.6,
+      calciumPer100g: 151,
+      isVerified: true,
+      source: 'USDA'
+    }
+  ]
+
+  for (const food of foods) {
+    // Check if food already exists by name
+    const existing = await prisma.food.findFirst({
+      where: { 
+        name: food.name, 
+        isPublic: true, 
+        userId: null 
+      }
+    })
+
+    if (!existing) {
+      await prisma.food.create({
+        data: {
+          ...food,
+          isPublic: true,
+          userId: null // System foods
+        }
+      })
+    }
+  }
+
+  console.log(`✅ Created ${foods.length} food items in nutrition database`)
+}
+
+/**
+ * Seed nutrition data for test users
+ */
+async function seedNutritionData(users: any[]) {
+  if (!users.length) return
+
+  console.log('📊 Seeding nutrition data for test users...')
+
+  // Get some foods to use in logs
+  const foods = await prisma.food.findMany({
+    where: { isPublic: true },
+    take: 20
+  })
+
+  if (foods.length === 0) {
+    console.log('No foods found, skipping nutrition data seeding')
+    return
+  }
+
+  let totalCreated = 0
+
+  for (const user of users) {
+    // Create nutrition goals
+    const nutritionGoal = await prisma.nutritionGoal.create({
+      data: {
+        userId: user.id,
+        dailyCalories: 2000,
+        dailyProtein: 150, // 30% of calories
+        dailyCarbs: 250,   // 50% of calories  
+        dailyFat: 67,      // 20% of calories
+        dailyFiber: 25,
+        dailySugar: 50,    // limit
+        dailySodium: 2300, // limit in mg
+        proteinPercentage: 30,
+        carbsPercentage: 50,
+        fatPercentage: 20,
+        goalType: 'maintenance',
+        activityLevel: 'moderate',
+        startDate: new Date(),
+        currentWeight: 70, // kg
+        targetWeight: 68,  // kg
+        heightCm: 175,
+        age: 30,
+        gender: 'male'
+      }
+    })
+    totalCreated++
+
+    // Create sample meals for the last 7 days
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const date = new Date()
+      date.setDate(date.getDate() - dayOffset)
+      date.setHours(0, 0, 0, 0)
+
+      // Breakfast
+      const breakfast = await prisma.meal.create({
+        data: {
+          userId: user.id,
+          name: 'Breakfast',
+          mealType: 'breakfast',
+          date: date,
+          plannedTime: new Date(date.getTime() + 8 * 60 * 60 * 1000), // 8 AM
+          consumedTime: new Date(date.getTime() + 8.5 * 60 * 60 * 1000), // 8:30 AM
+          totalCalories: 0, // Will be updated by food logs
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0
+        }
+      })
+
+      // Add some foods to breakfast
+      const breakfastFoods = [
+        { food: foods.find(f => f.name === 'Oats'), quantity: 50, unit: 'g' },
+        { food: foods.find(f => f.name === 'Banana'), quantity: 118, unit: 'g' },
+        { food: foods.find(f => f.name === 'Whole Milk'), quantity: 240, unit: 'ml' }
+      ].filter(item => item.food) // Remove any undefined foods
+
+      for (const item of breakfastFoods) {
+        if (item.food) {
+          const quantity = item.quantity
+          const multiplier = quantity / 100 // Convert per 100g to actual quantity
+          
+          await prisma.foodLog.create({
+            data: {
+              userId: user.id,
+              foodId: item.food.id,
+              mealId: breakfast.id,
+              quantity: quantity,
+              unit: item.unit,
+              calories: item.food.caloriesPer100g * multiplier,
+              protein: item.food.proteinPer100g * multiplier,
+              carbs: item.food.carbsPer100g * multiplier,
+              fat: item.food.fatPer100g * multiplier,
+              fiber: item.food.fiberPer100g ? item.food.fiberPer100g * multiplier : null,
+              sugar: item.food.sugarPer100g ? item.food.sugarPer100g * multiplier : null,
+              sodium: item.food.sodiumPer100g ? item.food.sodiumPer100g * multiplier : null,
+              consumedAt: breakfast.consumedTime || breakfast.plannedTime,
+              mealType: 'breakfast'
+            }
+          })
+          totalCreated++
+        }
+      }
+
+      // Lunch
+      const lunch = await prisma.meal.create({
+        data: {
+          userId: user.id,
+          name: 'Lunch',
+          mealType: 'lunch',
+          date: date,
+          plannedTime: new Date(date.getTime() + 12 * 60 * 60 * 1000), // 12 PM
+          consumedTime: new Date(date.getTime() + 12.5 * 60 * 60 * 1000), // 12:30 PM
+          totalCalories: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0
+        }
+      })
+
+      // Add foods to lunch
+      const lunchFoods = [
+        { food: foods.find(f => f.name === 'Chicken Breast'), quantity: 85, unit: 'g' },
+        { food: foods.find(f => f.name === 'Brown Rice'), quantity: 195, unit: 'g' },
+        { food: foods.find(f => f.name === 'Broccoli'), quantity: 91, unit: 'g' }
+      ].filter(item => item.food)
+
+      for (const item of lunchFoods) {
+        if (item.food) {
+          const quantity = item.quantity
+          const multiplier = quantity / 100
+          
+          await prisma.foodLog.create({
+            data: {
+              userId: user.id,
+              foodId: item.food.id,
+              mealId: lunch.id,
+              quantity: quantity,
+              unit: item.unit,
+              calories: item.food.caloriesPer100g * multiplier,
+              protein: item.food.proteinPer100g * multiplier,
+              carbs: item.food.carbsPer100g * multiplier,
+              fat: item.food.fatPer100g * multiplier,
+              fiber: item.food.fiberPer100g ? item.food.fiberPer100g * multiplier : null,
+              sugar: item.food.sugarPer100g ? item.food.sugarPer100g * multiplier : null,
+              sodium: item.food.sodiumPer100g ? item.food.sodiumPer100g * multiplier : null,
+              consumedAt: lunch.consumedTime || lunch.plannedTime,
+              mealType: 'lunch'
+            }
+          })
+          totalCreated++
+        }
+      }
+
+      // Add some water intake for the day
+      const waterIntakes = [
+        { amount: 250, time: 8 },   // 8 AM
+        { amount: 300, time: 10 },  // 10 AM  
+        { amount: 200, time: 12 },  // 12 PM
+        { amount: 250, time: 15 },  // 3 PM
+        { amount: 300, time: 18 },  // 6 PM
+        { amount: 200, time: 20 }   // 8 PM
+      ]
+
+      for (const intake of waterIntakes) {
+        const recordedAt = new Date(date.getTime() + intake.time * 60 * 60 * 1000)
+        
+        await prisma.waterIntake.create({
+          data: {
+            userId: user.id,
+            amountMl: intake.amount,
+            amountOz: intake.amount * 0.033814, // Convert ml to oz
+            recordedAt: recordedAt,
+            date: date,
+            source: 'water'
+          }
+        })
+        totalCreated++
+      }
+    }
+  }
+
+  console.log(`✅ Created ${totalCreated} nutrition data entries for ${users.length} users`)
 }
 
 // Run the seeding

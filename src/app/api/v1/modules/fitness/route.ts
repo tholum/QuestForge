@@ -18,9 +18,16 @@ import {
   workoutExerciseRepository,
   workoutSetRepository,
   personalRecordRepository,
-  fitnessDashboardRepository
+  fitnessDashboardRepository,
+  foodRepository,
+  foodLogRepository,
+  nutritionGoalRepository,
+  waterIntakeRepository,
+  mealRepository,
+  nutritionDashboardRepository
 } from '../../../../../lib/prisma/repositories/fitness-repository'
 import { GoalRepository } from '../../../../../lib/prisma/repositories/goal-repository'
+import { prisma } from '../../../../../lib/prisma/client'
 // import { xpManager } from '../../../../../lib/gamification/XPManager'
 
 // Initialize repositories
@@ -88,16 +95,80 @@ const UpdateExerciseTemplateSchema = CreateExerciseTemplateSchema.partial()
 const UpdateWorkoutExerciseSchema = CreateWorkoutExerciseSchema.partial()
 const UpdateWorkoutSetSchema = CreateWorkoutSetSchema.partial()
 
+// Nutrition validation schemas
+const CreateFoodLogSchema = z.object({
+  foodId: z.string(),
+  quantity: z.number().min(0),
+  unit: z.string(),
+  mealId: z.string().optional()
+})
+
+const CreateNutritionGoalSchema = z.object({
+  dailyCalories: z.number().min(0),
+  dailyProtein: z.number().min(0),
+  dailyCarbs: z.number().min(0),
+  dailyFat: z.number().min(0),
+  dailyFiber: z.number().min(0).optional(),
+  dailySugar: z.number().min(0).optional(),
+  dailySodium: z.number().min(0).optional(),
+  goalType: z.enum(['weight_loss', 'weight_gain', 'maintenance', 'muscle_gain', 'general']).default('general'),
+  activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).default('moderate'),
+  startDate: z.string().transform((str) => new Date(str)).optional(),
+  endDate: z.string().transform((str) => new Date(str)).optional()
+})
+
+const CreateWaterIntakeSchema = z.object({
+  amountMl: z.number().min(0),
+  source: z.string().optional(),
+  temperature: z.enum(['cold', 'room', 'warm', 'hot']).optional(),
+  notes: z.string().optional()
+})
+
+const CreateMealSchema = z.object({
+  name: z.string().min(1).max(200),
+  mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+  date: z.string().transform((str) => new Date(str)),
+  plannedTime: z.string().transform((str) => new Date(str)).optional(),
+  notes: z.string().optional(),
+  foods: z.array(z.object({
+    foodId: z.string(),
+    quantity: z.number().min(0),
+    unit: z.string(),
+    notes: z.string().optional()
+  })).optional()
+})
+
 // Helper function to get user ID (placeholder - integrate with your auth system)
 async function getUserId(request: NextRequest): Promise<string> {
   const authHeader = request.headers.get('authorization')
-  // For testing purposes, allow without auth and return a test user ID
+  
+  // For development/testing purposes, dynamically find the demo user
   if (!authHeader) {
-    console.warn('No auth header provided, using test user ID')
-    return 'test-user-id' // Test user ID for development
+    console.warn('No auth header provided, using demo user for development')
+    
+    // Find the demo user from the database
+    const demoUser = await prisma.user.findFirst({
+      where: { email: 'demo@example.com' }
+    })
+    
+    if (!demoUser) {
+      throw new Error('Demo user not found. Please run the seed script: npm run db:seed')
+    }
+    
+    return demoUser.id
   }
+  
   // TODO: Implement proper JWT token extraction
-  return 'user-placeholder-id' // Replace with actual implementation
+  // For now, still use demo user even with auth header
+  const demoUser = await prisma.user.findFirst({
+    where: { email: 'demo@example.com' }
+  })
+  
+  if (!demoUser) {
+    throw new Error('Demo user not found. Please run the seed script: npm run db:seed')
+  }
+  
+  return demoUser.id
 }
 
 /**
@@ -215,6 +286,152 @@ export async function GET(request: NextRequest) {
         const period = searchParams.get('period') || 'week'
         const analytics = await fitnessDashboardRepository.getAnalytics(userId, period)
         return NextResponse.json({ success: true, data: analytics })
+      }
+
+      case 'workout-templates': {
+        const limit = parseInt(searchParams.get('limit') || '50')
+        
+        // Get workouts that are marked as templates, plus workout plans that are templates
+        const workoutTemplates = await workoutRepository.findMany({
+          userId,
+          isTemplate: true,
+          limit
+        })
+
+        // Also get workout plans that are templates
+        const planTemplates = await workoutPlanRepository.getUserWorkoutPlans(userId, {
+          status: 'template',
+          limit
+        })
+
+        // Transform workouts to template format and combine with plan templates
+        const templates = [
+          ...workoutTemplates.map(workout => ({
+            id: workout.id,
+            name: workout.name,
+            description: workout.description,
+            workoutType: workout.workoutType,
+            estimatedDuration: workout.estimatedDuration,
+            exercises: workout.exercises || [],
+            isFromPlan: false
+          })),
+          ...planTemplates.map(plan => ({
+            id: plan.id,
+            name: plan.name,
+            description: plan.description,
+            workoutType: 'mixed' as const,
+            estimatedDuration: null,
+            exercises: [],
+            isFromPlan: true
+          }))
+        ]
+        
+        return NextResponse.json({ success: true, data: templates })
+      }
+
+      // Nutrition endpoints
+      case 'nutrition-dashboard': {
+        const date = searchParams.get('date') ? new Date(searchParams.get('date')!) : new Date()
+        const dashboardData = await nutritionDashboardRepository.getDashboardData(userId, date)
+        return NextResponse.json({ success: true, data: dashboardData })
+      }
+
+      case 'food-search': {
+        const query = searchParams.get('query') || ''
+        const limit = parseInt(searchParams.get('limit') || '20')
+        
+        if (!query) {
+          return NextResponse.json(
+            { success: false, error: 'Search query is required' },
+            { status: 400 }
+          )
+        }
+        
+        const foods = await foodRepository.searchFoods(query, userId, limit)
+        return NextResponse.json({ success: true, data: foods })
+      }
+
+      case 'food-logs': {
+        const date = searchParams.get('date')
+        if (!date) {
+          return NextResponse.json(
+            { success: false, error: 'Date is required for food logs' },
+            { status: 400 }
+          )
+        }
+        
+        const foodLogs = await foodLogRepository.getFoodLogsByDate(userId, new Date(date))
+        return NextResponse.json({ success: true, data: foodLogs })
+      }
+
+      case 'nutrition-goals': {
+        const goals = await nutritionGoalRepository.getUserGoals(userId)
+        return NextResponse.json({ success: true, data: goals })
+      }
+
+      case 'water-intake': {
+        const date = searchParams.get('date')
+        if (!date) {
+          return NextResponse.json(
+            { success: false, error: 'Date is required for water intake' },
+            { status: 400 }
+          )
+        }
+        
+        const waterIntake = await waterIntakeRepository.getWaterIntakeByDate(userId, new Date(date))
+        const totalWater = await waterIntakeRepository.getTotalWaterIntake(userId, new Date(date))
+        
+        return NextResponse.json({ 
+          success: true, 
+          data: {
+            entries: waterIntake,
+            totalMl: totalWater,
+            totalOz: Math.round(totalWater * 0.033814 * 100) / 100
+          }
+        })
+      }
+
+      case 'meals': {
+        const date = searchParams.get('date')
+        if (!date) {
+          return NextResponse.json(
+            { success: false, error: 'Date is required for meals' },
+            { status: 400 }
+          )
+        }
+        
+        const meals = await mealRepository.getMealsByDate(userId, new Date(date))
+        return NextResponse.json({ success: true, data: meals })
+      }
+
+      case 'nutrition-trends': {
+        const days = parseInt(searchParams.get('days') || '7')
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - days)
+        
+        const trends = []
+        for (let i = 0; i < days; i++) {
+          const date = new Date()
+          date.setDate(date.getDate() - i)
+          
+          const dayStart = new Date(date)
+          dayStart.setHours(0, 0, 0, 0)
+          const dayEnd = new Date(date)
+          dayEnd.setHours(23, 59, 59, 999)
+
+          const [dayTotals, waterTotal] = await Promise.all([
+            foodLogRepository.getNutritionTotals(userId, dayStart, dayEnd),
+            waterIntakeRepository.getTotalWaterIntake(userId, date)
+          ])
+
+          trends.unshift({
+            date: dayStart.toISOString().split('T')[0],
+            ...dayTotals,
+            water: waterTotal
+          })
+        }
+        
+        return NextResponse.json({ success: true, data: trends })
       }
 
       default:
@@ -510,6 +727,118 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Nutrition POST endpoints
+      case 'food-log': {
+        const validatedData = CreateFoodLogSchema.parse(data)
+        
+        const foodLog = await foodLogRepository.logFood(
+          userId,
+          validatedData.foodId,
+          validatedData.quantity,
+          validatedData.unit,
+          validatedData.mealId
+        )
+        
+        // Award XP for logging food
+        // await xpManager.awardXP(userId, 'log_food', 'easy')
+        
+        return NextResponse.json(
+          { success: true, data: foodLog, message: 'Food logged successfully' },
+          { status: 201 }
+        )
+      }
+
+      case 'nutrition-goal': {
+        const validatedData = CreateNutritionGoalSchema.parse(data)
+        
+        const goals = await nutritionGoalRepository.setUserGoals(userId, validatedData)
+        
+        // Award XP for setting nutrition goals
+        // await xpManager.awardXP(userId, 'set_nutrition_goals', 'medium')
+        
+        return NextResponse.json(
+          { success: true, data: goals, message: 'Nutrition goals set successfully' },
+          { status: 201 }
+        )
+      }
+
+      case 'water-intake': {
+        const validatedData = CreateWaterIntakeSchema.parse(data)
+        
+        const waterIntake = await waterIntakeRepository.logWaterIntake(
+          userId,
+          validatedData.amountMl,
+          validatedData.source,
+          validatedData.temperature
+        )
+        
+        // Award XP for logging water intake
+        // await xpManager.awardXP(userId, 'log_water', 'easy')
+        
+        return NextResponse.json(
+          { success: true, data: waterIntake, message: 'Water intake logged successfully' },
+          { status: 201 }
+        )
+      }
+
+      case 'meal': {
+        const validatedData = CreateMealSchema.parse(data)
+        
+        let meal
+        if (validatedData.foods && validatedData.foods.length > 0) {
+          // Create meal with foods
+          const { foods, ...mealData } = validatedData
+          meal = await mealRepository.createMealWithFoods(userId, mealData, foods)
+        } else {
+          // Create empty meal
+          meal = await mealRepository.create({
+            userId,
+            ...validatedData
+          })
+        }
+        
+        // Award XP for planning meal
+        // await xpManager.awardXP(userId, 'plan_meal', 'easy')
+        
+        return NextResponse.json(
+          { success: true, data: meal, message: 'Meal created successfully' },
+          { status: 201 }
+        )
+      }
+
+      case 'bulk-food-log': {
+        const { foods, mealId, consumedAt } = data
+        
+        if (!Array.isArray(foods) || foods.length === 0) {
+          return NextResponse.json(
+            { success: false, error: 'Foods array is required for bulk logging' },
+            { status: 400 }
+          )
+        }
+        
+        const loggedFoods = []
+        
+        for (const food of foods) {
+          const validatedFood = CreateFoodLogSchema.parse(food)
+          const foodLog = await foodLogRepository.logFood(
+            userId,
+            validatedFood.foodId,
+            validatedFood.quantity,
+            validatedFood.unit,
+            mealId
+          )
+          loggedFoods.push(foodLog)
+        }
+        
+        // Award XP for bulk logging
+        // await xpManager.awardXP(userId, 'bulk_log_food', 'medium')
+        
+        return NextResponse.json(
+          { success: true, data: loggedFoods, message: `${loggedFoods.length} foods logged successfully` },
+          { status: 201 }
+        )
+      }
+
       default:
         return NextResponse.json(
           { success: false, error: `Unknown type: ${type}` },
@@ -655,6 +984,121 @@ export async function PUT(request: NextRequest) {
         })
       }
 
+      // Nutrition PUT endpoints
+      case 'nutrition-goal': {
+        const validatedData = CreateNutritionGoalSchema.partial().parse(data)
+        
+        const goals = await nutritionGoalRepository.setUserGoals(userId, validatedData as any)
+        
+        return NextResponse.json({
+          success: true,
+          data: goals,
+          message: 'Nutrition goals updated successfully'
+        })
+      }
+
+      case 'food-log': {
+        const validatedData = CreateFoodLogSchema.partial().parse(data)
+        
+        // Verify ownership
+        const existingLog = await foodLogRepository.findById(id)
+        if (!existingLog || existingLog.userId !== userId) {
+          return NextResponse.json(
+            { success: false, error: 'Food log not found or access denied' },
+            { status: 404 }
+          )
+        }
+        
+        // If quantity, unit, or foodId changed, recalculate nutrition
+        if (validatedData.quantity || validatedData.unit || validatedData.foodId) {
+          const foodId = validatedData.foodId || existingLog.foodId
+          const quantity = validatedData.quantity || existingLog.quantity
+          const unit = validatedData.unit || existingLog.unit
+          
+          // Get food and recalculate
+          const food = await prisma.food.findUnique({ where: { id: foodId } })
+          if (food) {
+            let quantityInGrams = quantity
+            if (unit !== 'g' && unit !== 'ml') {
+              if (food.servingSize) {
+                quantityInGrams = (quantity * food.servingSize) / 100
+              }
+            } else {
+              quantityInGrams = quantity / 100
+            }
+
+            const updatedData = {
+              ...validatedData,
+              calories: food.caloriesPer100g * quantityInGrams,
+              protein: food.proteinPer100g * quantityInGrams,
+              carbs: food.carbsPer100g * quantityInGrams,
+              fat: food.fatPer100g * quantityInGrams,
+              fiber: food.fiberPer100g ? food.fiberPer100g * quantityInGrams : undefined,
+              sugar: food.sugarPer100g ? food.sugarPer100g * quantityInGrams : undefined,
+              sodium: food.sodiumPer100g ? food.sodiumPer100g * quantityInGrams : undefined
+            }
+            
+            const updatedLog = await foodLogRepository.update(id, updatedData)
+            
+            return NextResponse.json({
+              success: true,
+              data: updatedLog,
+              message: 'Food log updated successfully'
+            })
+          }
+        }
+        
+        const updatedLog = await foodLogRepository.update(id, validatedData)
+        
+        return NextResponse.json({
+          success: true,
+          data: updatedLog,
+          message: 'Food log updated successfully'
+        })
+      }
+
+      case 'water-intake': {
+        const validatedData = CreateWaterIntakeSchema.partial().parse(data)
+        
+        // Verify ownership
+        const existingIntake = await waterIntakeRepository.findById(id)
+        if (!existingIntake || existingIntake.userId !== userId) {
+          return NextResponse.json(
+            { success: false, error: 'Water intake not found or access denied' },
+            { status: 404 }
+          )
+        }
+        
+        const updatedIntake = await waterIntakeRepository.update(id, validatedData)
+        
+        return NextResponse.json({
+          success: true,
+          data: updatedIntake,
+          message: 'Water intake updated successfully'
+        })
+      }
+
+      case 'meal': {
+        const validatedData = CreateMealSchema.partial().parse(data)
+        
+        // Verify ownership
+        const existingMeal = await mealRepository.findById(id)
+        if (!existingMeal || existingMeal.userId !== userId) {
+          return NextResponse.json(
+            { success: false, error: 'Meal not found or access denied' },
+            { status: 404 }
+          )
+        }
+        
+        const updatedMeal = await mealRepository.update(id, validatedData)
+        
+        return NextResponse.json({
+          success: true,
+          data: updatedMeal,
+          message: 'Meal updated successfully'
+        })
+      }
+
       default:
         return NextResponse.json(
           { success: false, error: `Unknown type: ${type}` },
@@ -766,6 +1210,71 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: 'Exercise removed from workout successfully'
+        })
+      }
+
+      // Nutrition DELETE endpoints
+      case 'food-log': {
+        // Verify ownership
+        const foodLog = await foodLogRepository.findById(id)
+        if (!foodLog || foodLog.userId !== userId) {
+          return NextResponse.json(
+            { success: false, error: 'Food log not found or access denied' },
+            { status: 404 }
+          )
+        }
+        
+        await foodLogRepository.delete(id)
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Food log deleted successfully'
+        })
+      }
+
+      case 'water-intake': {
+        // Verify ownership
+        const waterIntake = await waterIntakeRepository.findById(id)
+        if (!waterIntake || waterIntake.userId !== userId) {
+          return NextResponse.json(
+            { success: false, error: 'Water intake not found or access denied' },
+            { status: 404 }
+          )
+        }
+        
+        await waterIntakeRepository.delete(id)
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Water intake deleted successfully'
+        })
+      }
+
+      case 'meal': {
+        // Verify ownership
+        const meal = await mealRepository.findById(id)
+        if (!meal || meal.userId !== userId) {
+          return NextResponse.json(
+            { success: false, error: 'Meal not found or access denied' },
+            { status: 404 }
+          )
+        }
+        
+        await mealRepository.delete(id)
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Meal deleted successfully'
+        })
+      }
+
+      case 'nutrition-goal': {
+        // Delete all nutrition goals for user
+        await prisma.nutritionGoal.deleteMany({ where: { userId } })
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Nutrition goals cleared successfully'
         })
       }
 
